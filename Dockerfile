@@ -1,15 +1,15 @@
-# Dockerfile for screening service
+# Dockerfile for bidir Screening service
+FROM node:8.8.1
 
-FROM node:6.9.5
+MAINTAINER Teferi Assefa <teferi.assefa@gmail.com>
 
-MAINTAINER Tony Mutai <tony@gebeya.com>
+ADD . /usr/src/app 
 
-ADD . /home/screening
-
-WORKDIR /home/screening
+WORKDIR /usr/src/app
 
 RUN npm install
 
 EXPOSE 8040
 
 ENTRYPOINT ["node", "app.js"]
+
