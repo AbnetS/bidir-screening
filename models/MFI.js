@@ -11,13 +11,13 @@ var Schema = mongoose.Schema;
 
 var MFISchema = new Schema({
     name:           { type: String, required:true },
-    location:       { type: String, required:true},
-    logo:           { type: String, default:"", required:true},
-    establishment_year:       { type: String, default:""},
-    website_link:             { type: String, default:""},
+    location:       { type: String, required:true },
+    logo:           { type: String, default:"", required:true },
+    establishment_year:       { type: String, default:"" },
+    website_link:             { type: String, default:"" },
     email:          { type: String, default:"" },
-    phone:          { type: String, default:""},
-    contact_person: {type: String, default: ""},
+    phone:          { type: String, default:"" },
+    contact_person: {type: String, default: "" },
     branches:        [{type: Schema.Types.ObjectId, ref: "Branch"}],
     date_created:   { type: Date },
     last_modified:  { type: Date }

@@ -22,9 +22,9 @@ var AccountSchema = new Schema({
   phone:          { type: String, default: '' },
   city:           { type: String, default: 'SELECT' },
   country:        { type: String, default: 'SELECT' },
-  permissions:    [{ type: Schema.Types.ObjectId, ref: 'Permission'}],
-  role:           { type: Schema.Types.ObjectId, ref: 'Role', default: null },
-  branch:         { type: Schema.Types.ObjectId, ref: 'Branch', default: null },
+  roles:          [{ type: Schema.Types.ObjectId, ref: 'Role', default: null }],
+  default_branch: { type: Schema.Types.ObjectId, ref: 'Branch', default: null },
+  access_branches:[{ type: Schema.Types.ObjectId, ref: 'Branch' }],
   date_created:   { type: Date },
   last_modified:  { type: Date }
 });
@@ -42,9 +42,9 @@ AccountSchema.statics.attributes = {
   gender: 1,
   city: 1,
   country: 1,
-  permissions: 1,
-  role: 1,
-  branch: 1,
+  roles: 1,
+  default_branch: 1,
+  access_branches: 1,
   date_created:   1,
   last_modified: 1
 };

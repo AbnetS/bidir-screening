@@ -10,13 +10,13 @@ const _       = require('lodash');
 const co      = require('co');
 
 const Role        = require('../models/role');
-const Account       = require('../models/account');
+const Permission       = require('../models/permission');
 const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Role.attributes;
 var population = [{
-  path: 'account',
-  select: Account.attributes
+  path: 'permissions',
+  select: Permission.attributes
 }];
 
 /**

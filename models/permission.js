@@ -16,10 +16,12 @@ var PermissionSchema = new Schema({
     description:    { type: String }, 
     module:         { 
       type: String, 
-      enums:[enums.MODULES.MFI_SETUP,enums.MODULES.USER_MANAGEMENT]}, //this list will be incorporating all modules in the system
-      endpoints:  [{
-        url: { type: String }
-      }],  
+      enums:[enums.MODULES.MFI_SETUP,enums.MODULES.USER_MANAGEMENT]
+    },
+    endpoints:  [{
+      url: { type: String }
+    }],
+    operations:     [{ type: String }],
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -54,6 +56,8 @@ PermissionSchema.statics.whitelist = {
   name: 1,
   description: 1,
   module: 1,
+  operations: 1,
+  endpoints: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1
