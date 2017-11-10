@@ -35,10 +35,36 @@ exports.create = function* createClient(next) {
 
   let body = this.request.body;
 
+  this.checkBody('first_name')
+      .notEmpty('First Name is Empty');
+  this.checkBody('last_name')
+      .notEmpty('Last Name is Empty');
+  this.checkBody('grandfather_name')
+      .notEmpty('Grandfather Name is Empty');
+  this.checkBody('gender')
+      .notEmpty('Gender is Empty');
+  this.checkBody('national_id_no')
+      .notEmpty('National ID Number is Empty');
+  this.checkBody('branch')
+      .notEmpty('Branch Id Reference is Empty');
+  this.checkBody('created_by')
+      .notEmpty('Officer Account Id Reference is Empty');
+  this.checkBody('civil_status')
+      .notEmpty('Civil Status is Empty');
+  this.checkBody('household_members_count')
+      .notEmpty('Household Members Count is Empty');
+
   if(this.errors) {
     return this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: JSON.stringify(this.errors)
+    }));
+  }
+
+  if(body.civil_status !== 'single' && !body.spouse) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_CREATION_ERROR',
+      message: 'Spouse Info is missing'
     }));
   }
 
