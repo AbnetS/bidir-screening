@@ -61,7 +61,7 @@ exports.create = function* createClient(next) {
     }));
   }
 
-  if(body.civil_status !== 'single' && !body.spouse) {
+  if(body.civil_status.toLowerCase() !== 'single' && !body.spouse) {
     return this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: 'Spouse Info is missing'
