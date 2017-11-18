@@ -62,8 +62,8 @@ exports.create = function* createClient(next) {
   if(!body.grandfather_name) errors.push('Client Grandfather name is Empty');
   if(!body.gender) errors.push('Client Gender is Empty');
   if(!body.national_id_no) errors.push('Client National Id No is Empty');
-  if(!body.branch) errors.push('Client Related Branch is Empty');
-  if(!body.created_by) errors.push('Client Created By is Empty');
+  if(!body.branch || !validator.isMongoId(body.branch)) errors.push('Client Related Branch is Empty');
+  if(!body.created_by|| !validator.isMongoId(body.created_by)) errors.push('Client Created By is Empty');
   if(!body.civil_status) errors.push('Client Civil Status is Empty');
   if(!body.household_members_count) errors.push('Client household_members_count is Empty');
   if(body.civil_status.toLowerCase() !== 'single' && !body.spouse) {
