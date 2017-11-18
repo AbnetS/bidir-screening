@@ -16,6 +16,7 @@ const validator  = require('validator');
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
+const googleBuckets      = require('../lib/google-buckets');
 
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
@@ -34,41 +35,60 @@ exports.create = function* createClient(next) {
   debug('create client');
 
   let body = this.request.body;
+  let bodyKeys = Object.keys(body);
+  let isMultipart = (bodyKeys.indexOf('fields') !== -1) && (bodyKeys.indexOf('files') !== -1);
 
-  this.checkBody('first_name')
-      .notEmpty('First Name is Empty');
-  this.checkBody('last_name')
-      .notEmpty('Last Name is Empty');
-  this.checkBody('grandfather_name')
-      .notEmpty('Grandfather Name is Empty');
-  this.checkBody('gender')
-      .notEmpty('Gender is Empty');
-  this.checkBody('national_id_no')
-      .notEmpty('National ID Number is Empty');
-  this.checkBody('branch')
-      .notEmpty('Branch Id Reference is Empty');
-  this.checkBody('created_by')
-      .notEmpty('Officer Account Id Reference is Empty');
-  this.checkBody('civil_status')
-      .notEmpty('Civil Status is Empty');
-  this.checkBody('household_members_count')
-      .notEmpty('Household Members Count is Empty');
+  // If content is multipart reduce fields and files path
+  if(isMultipart) {
+    let _clone = {};
 
-  if(this.errors) {
-    return this.throw(new CustomError({
-      type: 'CLIENT_CREATION_ERROR',
-      message: JSON.stringify(this.errors)
-    }));
+    for(let key of bodyKeys) {
+      let props = body[key];
+      let propsKeys = Object.keys(props);
+
+      for(let prop of propsKeys) {
+        _clone[prop] = props[prop];
+      }
+    }
+
+    body = _clone;
+
   }
 
+  let errors = [];
+
+  if(!body.first_name) errors.push('Client First Name is Empty');
+  if(!body.last_name) errors.push('Client Last Name is Empty');
+  if(!body.grandfather_name) errors.push('Client Grandfather name is Empty');
+  if(!body.gender) errors.push('Client Gender is Empty');
+  if(!body.national_id_no) errors.push('Client National Id No is Empty');
+  if(!body.branch) errors.push('Client Related Branch is Empty');
+  if(!body.created_by) errors.push('Client Created By is Empty');
+  if(!body.civil_status) errors.push('Client Civil Status is Empty');
+  if(!body.household_members_count) errors.push('Client household_members_count is Empty');
   if(body.civil_status.toLowerCase() !== 'single' && !body.spouse) {
+    errors.push('Client Spouse Info is Empty!!')
+  }
+
+  if(errors.length) {
     return this.throw(new CustomError({
-      type: 'CLIENT_CREATION_ERROR',
-      message: 'Spouse Info is missing'
+      type: 'MFI_CREATION_ERROR',
+      message: JSON.stringify(errors)
     }));
   }
 
   try {
+
+    if(body.national_id_card) {
+      let filename  = body.first_name.trim().toUpperCase().split(/\s+/).join('_');
+      let id        = crypto.randomBytes(6).toString('hex');
+      let extname   = path.extname(body.national_id_card.name);
+      let assetName = `${filename}_${id}${extname}`;
+
+      let url       = yield googleBuckets(body.national_id_card.path, assetName);
+
+      body.national_id_card = url;
+    }
 
     let client = yield ClientDal.get({ phone: body.phone });
     if(client) {

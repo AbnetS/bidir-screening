@@ -52,6 +52,10 @@ let config = {
     FILE_SIZE: 2 * 1024 * 1024, // 1MB,
     URL: API_URL + '/media/',
     DIR: path.resolve(process.cwd(), './assets') + '/'
+  },
+  GOOGLE_BUCKETS: {
+    ACCESS_ID: 'bidir-bucket-access@los-bidir.iam.gserviceaccount.com',
+    KEY: path.join(__dirname, '../config/google-buckets.pem')
   }
 };
 
