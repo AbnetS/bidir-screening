@@ -13,7 +13,7 @@ var Schema = mongoose.Schema;
 
 // New Client Schema model
 var ClientSchema = new Schema({
-  branch:         { type: Schema.Types.ObjectId, ref: 'Branch', default: null },
+  branch:         { type: Schema.Types.ObjectId, ref: 'Branch'},
   created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
   picture:        { type: String, default: '' },
   gender:         { type: String, default: 'SELECT' },
@@ -35,7 +35,7 @@ var ClientSchema = new Schema({
   },
   email:          { type: String, default: '' },
   phone:          { type: String, default: '' },
-  household_members_count: { type: Number, default: 0 },
+  household_members_count: { type: String, default: "0" },
   date_created:   { type: Date },
   last_modified:  { type: Date }
 });
