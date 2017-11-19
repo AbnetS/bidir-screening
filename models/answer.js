@@ -12,11 +12,14 @@ var enums     = require ('../lib/enums');
 var Schema = mongoose.Schema;
 
 var AnswerSchema = new Schema({       
-    title:     { type: String, required: true },
+    question_text:     { type: String, required: true },
     remark:    { type: String },
     type:      { type: String, enums: ['Yes/No', 'Fill In Blank', 'Multiple Choice'] },
-    response:  { type: String, default: '' },
-    sub_answers: [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    required:  { type: Boolean, default: false },
+    options:   [{ type: String }],
+    single_choice:   [{ type: String }],
+    multiple_choice: [{ type: String }],
+    sub_answers:   [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -48,11 +51,14 @@ AnswerSchema.pre('save', function preSaveMiddleware(next) {
  * Filter Answer Attributes to expose
  */
 AnswerSchema.statics.whitelist = {
-  title: 1,
+  question_text: 1,
   remark: 1,
-  sub_questions: 1,
+  sub_answers: 1,
   type: 1,
-  response: 1,
+  required: 1,
+  options: 1,
+  single_choice: 1,
+  multiple_choice: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1

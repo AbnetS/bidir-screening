@@ -38,8 +38,8 @@ var router  = Router();
  *      title: "Farmer is ...",
  *      remark: "remark",
  *      type: "Yes/No",
- *      response: "No",
- *      sub_answers: []	
+ *      sub_answers: [],
+ *      ...
  *    }],
  *    created_by : "556e1174a8952c9521286a60",
  *    client : "556e1174a8952c9521286a60".

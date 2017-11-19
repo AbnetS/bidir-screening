@@ -110,7 +110,7 @@ var router  = Router();
  *  }
  *
  */
-router.post('/create', acl(['*']), clientController.create);
+router.post('/create', acl('*'), clientController.create);
 
 
 /**
