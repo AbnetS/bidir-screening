@@ -31,6 +31,7 @@ var router  = Router();
  * @apiSuccess {Array} options Questions Options
  * @apiSuccess {Array} single_choice Question Single Choice
  * @apiSuccess {Array} multiple_choice Question Multiple Choice
+ * @apiSuccess {String} value Question Value
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -48,7 +49,8 @@ var router  = Router();
  *    	required: true
  *    	options: ['Yes', 'No'],
  *    	single_choice: ['Yes'],
- *    	multiple_choice: []
+ *    	multiple_choice: [],
+ *    value: ''
  *    }]
  *  }
  */
@@ -71,6 +73,7 @@ router.get('/paginate', acl(['*']), answerController.fetchAllByPagination);
  * @apiSuccess {Array} options Questions Options
  * @apiSuccess {Array} single_choice Question Single Choice
  * @apiSuccess {Array} multiple_choice Question Multiple Choice
+ * @apiSuccess {String} value Question Value
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -85,7 +88,8 @@ router.get('/paginate', acl(['*']), answerController.fetchAllByPagination);
  *    	required: true
  *    	options: ['Yes', 'No'],
  *    	single_choice: ['Yes'],
- *    	multiple_choice: []
+ *    	multiple_choice: [],
+ *      value: '' 
  *  }
  *
  */
@@ -116,6 +120,7 @@ router.get('/:id', acl(['*']), answerController.fetchOne);
  * @apiSuccess {Array} options Questions Options
  * @apiSuccess {Array} single_choice Question Single Choice
  * @apiSuccess {Array} multiple_choice Question Multiple Choice
+ * @apiSuccess {String} value Question Value
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -130,7 +135,8 @@ router.get('/:id', acl(['*']), answerController.fetchOne);
  *    	required: true
  *    	options: ['Yes', 'No'],
  *    	single_choice: ['Yes'],
- *    	multiple_choice: []
+ *    	multiple_choice: [],
+ *      value: ''
  *  }
  */
 router.put('/:id', acl(['*']), answerController.update);

@@ -20,6 +20,7 @@ var AnswerSchema = new Schema({
     single_choice:   [{ type: String }],
     multiple_choice: [{ type: String }],
     sub_answers:   [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    value:          { type: String, default: '' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -59,6 +60,7 @@ AnswerSchema.statics.whitelist = {
   options: 1,
   single_choice: 1,
   multiple_choice: 1,
+  value: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1
