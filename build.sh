@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 DOCKER_PATH=$(which docker)
-SERVICE_NAME=screening-api
+SERVICE_NAME=dev-screening-api
 IMAGE_TAG=bidir/$SERVICE_NAME
 EXPOSE_PORT=8040
 CONT_PORT=8040
-HOST_IP=10.142.0.2
-MONGODB_URL=mongodb://10.142.0.2:27017/bidir
+HOST_IP=10.142.0.5
+MONGODB_URL=mongodb://10.142.0.5:27017/bidir
 # Stop running container
 $DOCKER_PATH stop $SERVICE_NAME
 # Remove container
