@@ -1,4 +1,4 @@
-# Dockerfile for bidir Screening service
+# Dockerfile for bidir dev env't Screening service
 FROM node:8.8.1
 
 MAINTAINER Teferi Assefa <teferi.assefa@gmail.com>
