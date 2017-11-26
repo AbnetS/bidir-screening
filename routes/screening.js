@@ -215,5 +215,51 @@ router.get('/:id', acl(['*']), screeningController.fetchOne);
  */
 router.put('/:id', acl(['*']), screeningController.update);
 
+/**
+ * @api {put} /screenings/:id/status Update Screening Status
+ * @apiVersion 1.0.0
+ * @apiName UpdateStatus
+ * @apiGroup Screening 
+ *
+ * @apiDescription Update a Screening status with the given id
+ *
+ * @apiParam {String} status Update Status either incomplete, cancelled, completed or approved
+ *
+ * @apiParamExample Request example:
+ * {
+ *    status "cancelled"
+ * }
+ *
+ * @apiSuccess {String} _id screening id
+ * @apiSuccess {String} type Screening Type ie Screening or Screening Application
+ * @apiSuccess {String} description Screening Description
+ * @apiSuccess {String} title Screening Title
+ * @apiSuccess {String} process Screening Process
+ * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} client Client Reference being screened
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    _id : "556e1174a8952c9521286a60",
+ *    type: "Screening",
+ *    description: "This is a Description",
+ *    title: "MFI Screening Title",
+ *    process: "",
+ *    answers: ]{
+ *		 _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    }],
+ *    created_by: {
+ *		 _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    status: "cancelled"
+ *  }
+ */
+router.put('/:id/status', acl(['*']), screeningController.updateStatus);
+
+
 // Expose Screening Router
 module.exports = router;

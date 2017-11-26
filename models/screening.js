@@ -2,7 +2,7 @@
 
 /**
  * Load Module Dependencies.
- * status: incomplete, completed, cancelled
+ * status: incomplete, completed, cancelled, approved
  */
 var mongoose  = require('mongoose');
 var moment    = require('moment');

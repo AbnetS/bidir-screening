@@ -133,8 +133,9 @@ exports.fetchOne = function* fetchOneScreening(next) {
 exports.updateStatus = function* updateScreening(next) {
   debug(`updating status screening: ${this.params.id}`);
 
-  this.checkBody('is_active')
-      .notEmpty('is_active should not be empty');
+  this.checkBody('status')
+      .notEmpty('Status should not be empty')
+      .isIn(['incomplete','approved', 'completed','cancelled'], 'Correct Status is either incomplete, cancelled, approved or completed');
 
   let query = {
     _id: this.params.id
