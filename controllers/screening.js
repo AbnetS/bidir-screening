@@ -135,7 +135,7 @@ exports.updateStatus = function* updateScreening(next) {
 
   this.checkBody('status')
       .notEmpty('Status should not be empty')
-      .isIn(['incomplete','approved', 'completed','cancelled'], 'Correct Status is either incomplete, cancelled, approved or completed');
+      .isIn(['incomplete','approved', 'completed','cancelled', 'submitted'], 'Correct Status is either incomplete, cancelled, approved, submitted or completed');
 
   let query = {
     _id: this.params.id
@@ -144,6 +144,16 @@ exports.updateStatus = function* updateScreening(next) {
 
   try {
     let screening = yield ScreeningDal.update(query, body);
+
+    if(body.status === 'submitted') {
+      // Create Task
+      yield TaskDal.create({
+        task: `Approve Submitted Screening Form of ${screening.client.first_name} ${screening.client.first_name}`,
+        task_type: 'approval',
+        entity_ref: screening._id,
+        entity_type: 'screening'
+      })
+    }
 
     yield LogDal.track({
       event: 'screening_status_update',

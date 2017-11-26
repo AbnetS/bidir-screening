@@ -26,7 +26,7 @@ var router  = Router();
  * @apiParam {Array} answers Screening Answers
  * @apiParam {String} created_by Officer Account registering this
  * @apiParam {String} client Client Reference being screened
- * @apiParam {String} [status] Status ie incomplete, completed, cancelled
+ * @apiParam {String} [status] Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiParamExample Request Example:
  *  {
@@ -54,7 +54,7 @@ var router  = Router();
  * @apiSuccess {Array} answers Screening Answers
  * @apiSuccess {String} created_by Officer Account registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -100,7 +100,7 @@ router.post('/create', acl(['*']), screeningController.create);
  * @apiSuccess {Array} answers Screening Answers
  * @apiSuccess {String} created_by Officer Account registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled , approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -146,7 +146,7 @@ router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
  * @apiSuccess {Array} answers Screening Answers
  * @apiSuccess {String} created_by Officer Account registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -193,7 +193,7 @@ router.get('/:id', acl(['*']), screeningController.fetchOne);
  * @apiSuccess {Array} answers Screening Answers
  * @apiSuccess {String} created_by Officer Account registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -223,7 +223,7 @@ router.put('/:id', acl(['*']), screeningController.update);
  *
  * @apiDescription Update a Screening status with the given id
  *
- * @apiParam {String} status Update Status either incomplete, cancelled, completed or approved
+ * @apiParam {String} status Update Status either incomplete, cancelled, submitted, completed or approved
  *
  * @apiParamExample Request example:
  * {

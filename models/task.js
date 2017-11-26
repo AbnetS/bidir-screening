@@ -10,10 +10,12 @@ var paginator = require('mongoose-paginate');
 var Schema = mongoose.Schema;
 
 var TaskSchema = new Schema({      
-    account:    { type: Schema.Types.ObjectId, ref: 'Account' },
-    task:       { type: String },
-    task_type:  { type: String },
-    status:     { type:String, enums:['Pending','Done']},
+    entity_type: { type: String },
+    entity_ref:  { type: Schema.Types.ObjectId },
+    account:     { type: Schema.Types.ObjectId, ref: 'Account', default: null },
+    task:        { type: String },
+    task_type:   { type: String },
+    status:      { type:String, enums:['pending', 'approved', 'cancelled']},
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -45,7 +47,15 @@ TaskSchema.pre('save', function preSaveMiddleware(next) {
  * Filter Task Attributes to expose
  */
 TaskSchema.statics.whitelist = {
-  __v: 0
+  _id: 1,
+  entity_type: 1,
+  entity_ref: 1,
+  task: 1,
+  task_type: 1,
+  status: 1,
+  date_created: 1,
+  last_modified: 1,
+  account: 1
 };
 
 
