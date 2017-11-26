@@ -149,7 +149,7 @@ exports.updateStatus = function* updateScreening(next) {
       // Create Task
       yield TaskDal.create({
         task: `Approve Submitted Screening Form of ${screening.client.first_name} ${screening.client.first_name}`,
-        task_type: 'approval',
+        task_type: 'approve',
         entity_ref: screening._id,
         entity_type: 'screening'
       })
