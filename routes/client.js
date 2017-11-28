@@ -48,6 +48,7 @@ var router  = Router();
  *    grandfather_name: "John Doe",
  *    national_id_no: "242535353",
  *    national_id_card: "<SCANNED_IMAGE_OBJECT>",
+ *    picture: "<IMAGE_OBJECT>",
  *    date_of_birth: "'1988-11-10T00:00:00.000Z",
  *    civil_status: "single", 
  *    woreda: "Woreda",
