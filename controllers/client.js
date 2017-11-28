@@ -90,6 +90,17 @@ exports.create = function* createClient(next) {
       body.national_id_card = url;
     }
 
+    if(body.picture) {
+      let filename  = body.first_name.trim().toUpperCase().split(/\s+/).join('_');
+      let id        = crypto.randomBytes(6).toString('hex');
+      let extname   = path.extname(body.picture.name);
+      let assetName = `${filename}_${id}${extname}`;
+
+      let url       = yield googleBuckets(body.picture.path, assetName);
+
+      body.picture = url;
+    }
+
     let client = yield ClientDal.get({ phone: body.phone });
     if(client) {
       throw new Error('Client with those details already exists!!');
