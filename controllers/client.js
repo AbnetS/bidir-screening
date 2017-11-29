@@ -101,6 +101,10 @@ exports.create = function* createClient(next) {
       body.picture = url;
     }
 
+    if(body.spouse) {
+      body.spouse = JSON.parse(body.spouse);
+    }
+
     let client = yield ClientDal.get({ phone: body.phone });
     if(client) {
       throw new Error('Client with those details already exists!!');
