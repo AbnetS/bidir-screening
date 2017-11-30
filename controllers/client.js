@@ -101,8 +101,13 @@ exports.create = function* createClient(next) {
       body.picture = url;
     }
 
-    if(body.spouse) {
-      body.spouse = JSON.parse(body.spouse);
+    if(isMultipart) {
+      if(body.spouse) {
+        body.spouse = JSON.parse(body.spouse);
+      }
+      if(body.geolocation) {
+        body.geolocation = JSON.parse(body.geolocation);
+      }
     }
 
     let client = yield ClientDal.get({ phone: body.phone });

@@ -35,6 +35,9 @@ var router  = Router();
  * @apiParam {String} [spouse.last_name] Spouse Last Name
  * @apiParam {String} [spouse.grandfather_name] Spouse Grandfather's Name
  * @apiParam {String} [spouse.national_id_no] Spouse National Id number
+ * @apiParam {String} [geolocation] Geolocation Info
+ * @apiParam {String} [geolocation.latitude] Latitude
+ * @apiParam {String} [geolocation.longitude] Longitude
  * @apiParam {String} [email] Email Address
  * @apiParam {String} phone Phone Number
  * @apiParam {Number} household_members_count Household Members Count
@@ -78,6 +81,9 @@ var router  = Router();
  * @apiSuccess {String} [spouse.last_name] Spouse Last Name
  * @apiSuccess {String} [spouse.grandfather_name] Spouse Grandfather's Name
  * @apiSuccess {String} [spouse.national_id_no] Spouse National Id number
+ * @apiSuccess {String} [geolocation] Geolocation Info
+ * @apiSuccess {String} [geolocation.latitude] Latitude
+ * @apiSuccess {String} [geolocation.longitude] Longitude
  * @apiSuccess {String} [email] Email Address
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
@@ -107,6 +113,16 @@ var router  = Router();
  *    created_by: {
  *		 _id : "556e1174a8952c9521286a60",
  *       ....
+ *    },
+ *    spouse: {
+ *      first_name: "",
+ *      last_name: "",
+ *      grandfather_name: "",
+ *      national_id_no: "",
+ *    },
+ *    geolocation: {
+ *      latitude: 0,
+ *      longitude: 0
  *    }
  *  }
  *
@@ -141,6 +157,9 @@ router.post('/create', acl('*'), clientController.create);
  * @apiSuccess {String} [spouse.last_name] Spouse Last Name
  * @apiSuccess {String} [spouse.grandfather_name] Spouse Grandfather's Name
  * @apiSuccess {String} [spouse.national_id_no] Spouse National Id number
+ * @apiSuccess {String} [geolocation] Geolocation Info
+ * @apiSuccess {String} [geolocation.latitude] Latitude
+ * @apiSuccess {String} [geolocation.longitude] Longitude
  * @apiSuccess {String} [email] Email Address
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
@@ -173,6 +192,16 @@ router.post('/create', acl('*'), clientController.create);
  *    created_by: {
  *		 _id : "556e1174a8952c9521286a60",
  *       ....
+ *    },
+ *    spouse: {
+ *      first_name: "",
+ *      last_name: "",
+ *      grandfather_name: "",
+ *      national_id_no: "",
+ *    },
+ *    geolocation: {
+ *      latitude: 0,
+ *      longitude: 0
  *    }
  *    }]
  *  }
@@ -204,6 +233,9 @@ router.get('/paginate', acl(['*']), clientController.fetchAllByPagination);
  * @apiSuccess {String} [spouse.last_name] Spouse Last Name
  * @apiSuccess {String} [spouse.grandfather_name] Spouse Grandfather's Name
  * @apiSuccess {String} [spouse.national_id_no] Spouse National Id number
+ * @apiSuccess {String} [geolocation] Geolocation Info
+ * @apiSuccess {String} [geolocation.latitude] Latitude
+ * @apiSuccess {String} [geolocation.longitude] Longitude
  * @apiSuccess {String} [email] Email Address
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
@@ -233,6 +265,16 @@ router.get('/paginate', acl(['*']), clientController.fetchAllByPagination);
  *    created_by: {
  *		 _id : "556e1174a8952c9521286a60",
  *       ....
+ *    },
+ *    spouse: {
+ *      first_name: "",
+ *      last_name: "",
+ *      grandfather_name: "",
+ *      national_id_no: "",
+ *    },
+ *    geolocation: {
+ *      latitude: 0,
+ *      longitude: 0
  *    }
  *  }
  *
@@ -272,6 +314,9 @@ router.get('/:id', acl(['*']), clientController.fetchOne);
  * @apiSuccess {String} [spouse.last_name] Spouse Last Name
  * @apiSuccess {String} [spouse.grandfather_name] Spouse Grandfather's Name
  * @apiSuccess {String} [spouse.national_id_no] Spouse National Id number
+ * @apiSuccess {String} [geolocation] Geolocation Info
+ * @apiSuccess {String} [geolocation.latitude] Latitude
+ * @apiSuccess {String} [geolocation.longitude] Longitude
  * @apiSuccess {String} [email] Email Address
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
@@ -301,6 +346,16 @@ router.get('/:id', acl(['*']), clientController.fetchOne);
  *    created_by: {
  *		 _id : "556e1174a8952c9521286a60",
  *       ....
+ *    },
+ *    spouse: {
+ *      first_name: "",
+ *      last_name: "",
+ *      grandfather_name: "",
+ *      national_id_no: "",
+ *    },
+ *    geolocation: {
+ *      latitude: 0,
+ *      longitude: 0
  *    }
  *  }
  */
