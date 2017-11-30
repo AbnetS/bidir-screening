@@ -15,6 +15,7 @@ var appRouter = new Router();
 
 const OPEN_ENDPOINTS = [
     /\/assets\/.*/,
+    '/screenings/clients/paginate',
     '/'
 ];
 

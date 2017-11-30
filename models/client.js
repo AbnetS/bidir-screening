@@ -36,7 +36,7 @@ var ClientSchema = new Schema({
   geolocation:    {
     latitude:   { type: Number, default: 0 },
     longitude:  { type: Number, default: 0 }
-  }
+  },
   email:          { type: String, default: '' },
   phone:          { type: String, default: '' },
   household_members_count: { type: String, default: "0" },
