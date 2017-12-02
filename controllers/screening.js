@@ -210,7 +210,7 @@ exports.update = function* updateScreening(next) {
 
       body.answers = answers;
     }
-    
+
     let screening = yield ScreeningDal.update(query, body);
 
     yield LogDal.track({
@@ -267,4 +267,53 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       message: ex.message
     }));
   }
+};
+
+
+/**
+ * Remove a single screening.
+ *
+ * @desc Fetch a screening with the given id from the database
+ *       and Remove their data
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.remove = function* removeScreening(next) {
+  debug(`removing screening: ${this.params.id}`);
+
+  let query = {
+    _id: this.params.id
+  };
+
+  try {
+    let screening = yield ScreeningDal.delete(query);
+    if(!screening._id) {
+      throw new Error('Screening Does Not Exist!');
+    }
+
+    for(let answer of screening.answers) {
+      answer = yield AnswerDal.delete({ _id: answer._id });
+      if(answer.sub_answers.length) {
+        for(let _answer of answer.sub_answers) {
+          yield AnswerDal.delete({ _id: _answer._id });
+        }
+      }
+    }
+
+    yield LogDal.track({
+      event: 'screening_delete',
+      permission: this.state._user._id ,
+      message: `Delete Info for ${screening._id}`
+    });
+
+    this.body = screening;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'REMOVE_SCREENING_ERROR',
+      message: ex.message
+    }));
+
+  }
+
 };

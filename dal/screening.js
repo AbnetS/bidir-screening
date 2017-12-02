@@ -16,7 +16,11 @@ const mongoUpdate   = require('../lib/mongo-update');
 var returnFields = Screening.attributes;
 var population = [{
   path: 'answers',
-  select: Answer.attributes
+  select: Answer.attributes,
+  populate: {
+    path: 'sub_answers',
+    select: Answer.attributes
+  }
 }];
 
 /**

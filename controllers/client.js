@@ -278,3 +278,42 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
     }));
   }
 };
+
+/**
+ * Remove a single client.
+ *
+ * @desc Fetch a client with the given id from the database
+ *       and Remove their data
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.remove = function* removeClient(next) {
+  debug(`removing client: ${this.params.id}`);
+
+  let query = {
+    _id: this.params.id
+  };
+
+  try { 
+    let client = yield ClientDal.delete(query);
+    if(!client._id) {
+      throw new Error('Client Does Not Exist!');
+    }
+
+    yield LogDal.track({
+      event: 'client_delete',
+      permission: this.state._user._id ,
+      message: `Delete Info for ${client._id}`
+    });
+
+    this.body = answer;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'REMOVE_CLIENT_ERROR',
+      message: ex.message
+    }));
+
+  }
+
+};

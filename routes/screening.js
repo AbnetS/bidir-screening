@@ -260,6 +260,45 @@ router.put('/:id', acl(['*']), screeningController.update);
  */
 router.put('/:id/status', acl(['*']), screeningController.updateStatus);
 
+/**
+ * @api {delete} /screenings/:id Delete Screening
+ * @apiVersion 1.0.0
+ * @apiName DeleteScreening
+ * @apiGroup Screening 
+ *
+ * @apiDescription Delete a Screening with the given id
+ *
+ * @apiSuccess {String} _id screening id
+ * @apiSuccess {String} type Screening Type ie Screening or Screening Application
+ * @apiSuccess {String} description Screening Description
+ * @apiSuccess {String} title Screening Title
+ * @apiSuccess {String} process Screening Process
+ * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} client Client Reference being screened
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    _id : "556e1174a8952c9521286a60",
+ *    type: "Screening",
+ *    description: "This is a Description",
+ *    title: "MFI Screening Title",
+ *    process: "",
+ *    answers: ]{
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    }],
+ *    created_by: {
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    status: "cancelled"
+ *  }
+ */
+router.delete('/:id', acl(['*']), screeningController.remove);
+
+
 
 // Expose Screening Router
 module.exports = router;
