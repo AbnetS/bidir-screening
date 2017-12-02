@@ -191,6 +191,26 @@ exports.update = function* updateScreening(next) {
   let body = this.request.body;
 
   try {
+
+    if(body.answers) {
+      let answers = [];
+
+      for(let answer of body.answers) {
+        let answerID = answer._id;
+
+        delete answer._id;
+        delete answer._v;
+        delete answer.date_created;
+        delete answer.last_modified;
+
+        let result = yield AnswerDal.update({ _id: answerID }, answer);
+
+        answers.push(result);
+      }
+
+      body.answers = answers;
+    }
+    
     let screening = yield ScreeningDal.update(query, body);
 
     yield LogDal.track({
