@@ -1,48 +1,43 @@
 'use strict';
-// Access Layer for Screening Data.
+// Access Layer for Question Data.
 
 /**
  * Load Module Dependencies.
  */
-const debug   = require('debug')('api:dal-screening');
+const debug   = require('debug')('api:dal-question');
 const moment  = require('moment');
 const _       = require('lodash');
 const co      = require('co');
 
-const Screening     = require('../models/screening');
-const Answer        = require('../models/answer');
+const Question    = require('../models/question');
 const mongoUpdate   = require('../lib/mongo-update');
 
-var returnFields = Screening.attributes;
+var returnFields = Question.attributes;
 var population = [{
-  path: 'answers',
-  select: Answer.attributes,
-  populate: {
-    path: 'sub_answers',
-    select: Answer.attributes
-  }
+  path: 'sub_questions',
+  select: Question.attributes
 }];
 
 /**
- * create a new screening.
+ * create a new question.
  *
- * @desc  creates a new screening and saves them
+ * @desc  creates a new question and saves them
  *        in the database
  *
- * @param {Object}  screeningData  Data for the screening to create
+ * @param {Object}  questionData  Data for the question to create
  *
  * @return {Promise}
  */
-exports.create = function create(screeningData) {
-  debug('creating a new screening');
+exports.create = function create(questionData) {
+  debug('creating a new question');
 
   return co(function* () {
 
-    let unsavedScreening = new Screening(screeningData);
-    let newScreening = yield unsavedScreening.save();
-    let screening = yield exports.get({ _id: newScreening._id });
+    let unsavedQuestion = new Question(questionData);
+    let newQuestion = yield unsavedQuestion.save();
+    let question = yield exports.get({ _id: newQuestion._id });
 
-    return screening;
+    return question;
 
 
   });
@@ -50,37 +45,37 @@ exports.create = function create(screeningData) {
 };
 
 /**
- * delete a screening
+ * delete a question
  *
- * @desc  delete data of the screening with the given
+ * @desc  delete data of the question with the given
  *        id
  *
  * @param {Object}  query   Query Object
  *
  * @return {Promise}
  */
-exports.delete = function deleteScreening(query) {
-  debug('deleting screening: ', query);
+exports.delete = function deleteQuestion(query) {
+  debug('deleting question: ', query);
 
   return co(function* () {
-    let screening = yield exports.get(query);
+    let question = yield exports.get(query);
     let _empty = {};
 
-    if(!screening) {
+    if(!question) {
       return _empty;
     } else {
-      yield screening.remove();
+      yield question.remove();
 
-      return screening;
+      return question;
     }
 
   });
 };
 
 /**
- * update a screening
+ * update a question
  *
- * @desc  update data of the screening with the given
+ * @desc  update data of the question with the given
  *        id
  *
  * @param {Object} query Query object
@@ -89,7 +84,7 @@ exports.delete = function deleteScreening(query) {
  * @return {Promise}
  */
 exports.update = function update(query, updates) {
-  debug('updating screening: ', query);
+  debug('updating question: ', query);
 
   let now = moment().toISOString();
   let opts = {
@@ -99,44 +94,44 @@ exports.update = function update(query, updates) {
 
   updates = mongoUpdate(updates);
 
-  return Screening.findOneAndUpdate(query, updates, opts)
+  return Question.findOneAndUpdate(query, updates, opts)
       .populate(population)
       .exec();
 };
 
 /**
- * get a screening.
+ * get a question.
  *
- * @desc get a screening with the given id from db
+ * @desc get a question with the given id from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
-exports.get = function get(query, screening) {
-  debug('getting screening ', query);
+exports.get = function get(query, question) {
+  debug('getting question ', query);
 
-  return Screening.findOne(query, returnFields)
+  return Question.findOne(query, returnFields)
     .populate(population)
     .exec();
 
 };
 
 /**
- * get a collection of screenings
+ * get a collection of questions
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of questions from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollection = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of questions');
 
   return new Promise((resolve, reject) => {
     resolve(
-     Screening
+     Question
       .find(query, returnFields)
       .populate(population)
       .stream());
@@ -146,16 +141,16 @@ exports.getCollection = function getCollection(query, qs) {
 };
 
 /**
- * get a collection of screenings using pagination
+ * get a collection of questions using pagination
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of questions from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollectionByPagination = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of questions');
 
   let opts = {
     select:  returnFields,
@@ -167,7 +162,7 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 
 
   return new Promise((resolve, reject) => {
-    Screening.paginate(query, opts, function (err, docs) {
+    Question.paginate(query, opts, function (err, docs) {
       if(err) {
         return reject(err);
       }

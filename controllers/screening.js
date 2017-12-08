@@ -16,11 +16,14 @@ const validator  = require('validator');
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
+const checkPermissions   = require('../lib/permissions');
 
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
 const AnswerDal          = require('../dal/answer');
 const LogDal             = require('../dal/log');
+const NotificationDal    = require('../dal/notification');
+const ClientDal          = require('../dal/client');
 
 
 /**
@@ -60,7 +63,7 @@ exports.create = function* createScreening(next) {
       let subs = [];
 
       if(answer.sub_answers) {
-        for(let sub of answer) {
+        for(let sub of answer.sub_answers) {
           let ans = yield AnswerDal.create(sub);
 
           subs.push(ans);
@@ -133,26 +136,40 @@ exports.fetchOne = function* fetchOneScreening(next) {
 exports.updateStatus = function* updateScreening(next) {
   debug(`updating status screening: ${this.params.id}`);
 
+  let isPermitted = yield checkPermissions.isPermitted(this.state._user, 'AUTHORIZE');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'SCREENING_STATUS_UPDATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
   this.checkBody('status')
       .notEmpty('Status should not be empty')
-      .isIn(['incomplete','approved', 'completed','cancelled', 'submitted'], 'Correct Status is either incomplete, cancelled, approved, submitted or completed');
+      .isIn(['incomplete','approved', 'completed','declined', 'submitted'], 'Correct Status is either incomplete, declined, approved, submitted or completed');
 
   let query = {
     _id: this.params.id
   };
+
   let body = this.request.body;
 
   try {
-    let screening = yield ScreeningDal.update(query, body);
 
-    if(body.status === 'submitted') {
-      // Create Task
-      yield TaskDal.create({
-        task: `Approve Submitted Screening Form of ${screening.client.first_name} ${screening.client.first_name}`,
-        task_type: 'approve',
-        entity_ref: screening._id,
-        entity_type: 'screening'
-      })
+    let screening = yield ScreeningDal.get(query);
+
+    if(screening.status == body.status) {
+      throw new Error(`Screening Is Already ${body.status}`);
+    }
+
+    screening = yield ScreeningDal.update(query, body);
+
+    if(body.status === 'declined') {
+      let client = yield ClientDal.get({ _id: screening.client });
+      yield NotificationDal.create({
+        for: screening.created_by,
+        message: `Screening for ${client.first_name} ${client.last_name} has been declined.`
+      });
     }
 
     yield LogDal.track({

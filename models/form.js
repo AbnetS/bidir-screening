@@ -1,8 +1,7 @@
-// Screening Model Definiton.
+// Form Model Definiton.
 
 /**
  * Load Module Dependencies.
- * status: incomplete, completed, declined, approved, new
  */
 var mongoose  = require('mongoose');
 var moment    = require('moment');
@@ -12,20 +11,19 @@ var enums     = require ('../lib/enums');
 
 var Schema = mongoose.Schema;
 
-var ScreeningSchema = new Schema({       
-    type:           { type: String, default: 'Screening' },
+var FormSchema = new Schema({       
+    type:           { type: String, enum: ['Screening', 'Form Application'] },
     description:    { type: String, default: '' },
     title:          { type: String, default: '' },
-    answers:        [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    process:        { type: String, default: '' },
+    questions:      [{ type: Schema.Types.ObjectId, ref: 'Question'}],
     created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
-    client:         { type: Schema.Types.ObjectId, ref: 'Client' },
-    status:         { type: String, default: 'new' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
 
 // add mongoose-troop middleware to support pagination
-ScreeningSchema.plugin(paginator);
+FormSchema.plugin(paginator);
 
 /**
  * Pre save middleware.
@@ -34,7 +32,7 @@ ScreeningSchema.plugin(paginator);
  *          attributes prior to save.
  *        - Hash tokens password.
  */
-ScreeningSchema.pre('save', function preSaveMiddleware(next) {
+FormSchema.pre('save', function preSaveMiddleware(next) {
   var instance = this;
 
   // set date modifications
@@ -48,23 +46,21 @@ ScreeningSchema.pre('save', function preSaveMiddleware(next) {
 });
 
 /**
- * Filter Screening Attributes to expose
+ * Filter Form Attributes to expose
  */
-ScreeningSchema.statics.whitelist = {
+FormSchema.statics.whitelist = {
   type: 1,
   name: 1,
   title: 1,
   process: 1,
   description: 1,
-  answers: 1,
+  questions: 1,
   created_by: 1,
-  client: 1,
-  status: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1
 };
 
 
-// Expose Screening model
-module.exports = mongoose.model('Screening', ScreeningSchema);
+// Expose Form model
+module.exports = mongoose.model('Form', FormSchema);

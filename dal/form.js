@@ -1,48 +1,48 @@
 'use strict';
-// Access Layer for Screening Data.
+// Access Layer for Form Data.
 
 /**
  * Load Module Dependencies.
  */
-const debug   = require('debug')('api:dal-screening');
+const debug   = require('debug')('api:dal-form');
 const moment  = require('moment');
 const _       = require('lodash');
 const co      = require('co');
 
-const Screening     = require('../models/screening');
-const Answer        = require('../models/answer');
+const Form    = require('../models/form');
+const Question = require('../models/question');
 const mongoUpdate   = require('../lib/mongo-update');
 
-var returnFields = Screening.attributes;
+var returnFields = Form.attributes;
 var population = [{
-  path: 'answers',
-  select: Answer.attributes,
+  path: 'questions',
+  select: Question.attributes,
   populate: {
-    path: 'sub_answers',
-    select: Answer.attributes
+    path: 'sub_questions',
+   select: Question.attributes,
   }
 }];
 
 /**
- * create a new screening.
+ * create a new form.
  *
- * @desc  creates a new screening and saves them
+ * @desc  creates a new form and saves them
  *        in the database
  *
- * @param {Object}  screeningData  Data for the screening to create
+ * @param {Object}  formData  Data for the form to create
  *
  * @return {Promise}
  */
-exports.create = function create(screeningData) {
-  debug('creating a new screening');
+exports.create = function create(formData) {
+  debug('creating a new form');
 
   return co(function* () {
 
-    let unsavedScreening = new Screening(screeningData);
-    let newScreening = yield unsavedScreening.save();
-    let screening = yield exports.get({ _id: newScreening._id });
+    let unsavedForm = new Form(formData);
+    let newForm = yield unsavedForm.save();
+    let form = yield exports.get({ _id: newForm._id });
 
-    return screening;
+    return form;
 
 
   });
@@ -50,37 +50,37 @@ exports.create = function create(screeningData) {
 };
 
 /**
- * delete a screening
+ * delete a form
  *
- * @desc  delete data of the screening with the given
+ * @desc  delete data of the form with the given
  *        id
  *
  * @param {Object}  query   Query Object
  *
  * @return {Promise}
  */
-exports.delete = function deleteScreening(query) {
-  debug('deleting screening: ', query);
+exports.delete = function deleteForm(query) {
+  debug('deleting form: ', query);
 
   return co(function* () {
-    let screening = yield exports.get(query);
+    let form = yield exports.get(query);
     let _empty = {};
 
-    if(!screening) {
+    if(!form) {
       return _empty;
     } else {
-      yield screening.remove();
+      yield form.remove();
 
-      return screening;
+      return form;
     }
 
   });
 };
 
 /**
- * update a screening
+ * update a form
  *
- * @desc  update data of the screening with the given
+ * @desc  update data of the form with the given
  *        id
  *
  * @param {Object} query Query object
@@ -89,7 +89,7 @@ exports.delete = function deleteScreening(query) {
  * @return {Promise}
  */
 exports.update = function update(query, updates) {
-  debug('updating screening: ', query);
+  debug('updating form: ', query);
 
   let now = moment().toISOString();
   let opts = {
@@ -99,44 +99,44 @@ exports.update = function update(query, updates) {
 
   updates = mongoUpdate(updates);
 
-  return Screening.findOneAndUpdate(query, updates, opts)
+  return Form.findOneAndUpdate(query, updates, opts)
       .populate(population)
       .exec();
 };
 
 /**
- * get a screening.
+ * get a form.
  *
- * @desc get a screening with the given id from db
+ * @desc get a form with the given id from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
-exports.get = function get(query, screening) {
-  debug('getting screening ', query);
+exports.get = function get(query, form) {
+  debug('getting form ', query);
 
-  return Screening.findOne(query, returnFields)
+  return Form.findOne(query, returnFields)
     .populate(population)
     .exec();
 
 };
 
 /**
- * get a collection of screenings
+ * get a collection of forms
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of forms from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollection = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of forms');
 
   return new Promise((resolve, reject) => {
     resolve(
-     Screening
+     Form
       .find(query, returnFields)
       .populate(population)
       .stream());
@@ -146,16 +146,16 @@ exports.getCollection = function getCollection(query, qs) {
 };
 
 /**
- * get a collection of screenings using pagination
+ * get a collection of forms using pagination
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of forms from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollectionByPagination = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of forms');
 
   let opts = {
     select:  returnFields,
@@ -167,7 +167,7 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 
 
   return new Promise((resolve, reject) => {
-    Screening.paginate(query, opts, function (err, docs) {
+    Form.paginate(query, opts, function (err, docs) {
       if(err) {
         return reject(err);
       }

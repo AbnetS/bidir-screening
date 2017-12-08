@@ -1,4 +1,4 @@
-// Answer Model Definiton.
+// Question Model Definiton.
 
 /**
  * Load Module Dependencies.
@@ -11,22 +11,22 @@ var enums     = require ('../lib/enums');
 
 var Schema = mongoose.Schema;
 
-var AnswerSchema = new Schema({       
+var QuestionSchema = new Schema({       
     question_text:     { type: String, required: true },
-    remark:    { type: String },
+    remark:    { type: String, default: '' },
     type:      { type: String, enums: ['Yes/No', 'Fill In Blank', 'Multiple Choice'] },
     required:  { type: Boolean, default: false },
     options:   [{ type: String }],
     single_choice:   [{ type: String }],
     multiple_choice: [{ type: String }],
-    sub_questions:   [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
-    value:          { type: String, default: '' },
-    date_created:   { type: Date },
-    last_modified:  { type: Date }
+    sub_questions:   [{ type: Schema.Types.ObjectId, ref: 'Question'}],
+    value:           { type: String, default: '' },
+    date_created:    { type: Date },
+    last_modified:   { type: Date }
 });
 
 // add mongoose-troop middleware to support pagination
-AnswerSchema.plugin(paginator);
+QuestionSchema.plugin(paginator);
 
 /**
  * Pre save middleware.
@@ -35,7 +35,7 @@ AnswerSchema.plugin(paginator);
  *          attributes prior to save.
  *        - Hash tokens password.
  */
-AnswerSchema.pre('save', function preSaveMiddleware(next) {
+QuestionSchema.pre('save', function preSaveMiddleware(next) {
   var instance = this;
 
   // set date modifications
@@ -49,13 +49,14 @@ AnswerSchema.pre('save', function preSaveMiddleware(next) {
 });
 
 /**
- * Filter Answer Attributes to expose
+ * Filter Question Attributes to expose
  */
-AnswerSchema.statics.whitelist = {
+QuestionSchema.statics.whitelist = {
   question_text: 1,
   remark: 1,
   sub_questions: 1,
   type: 1,
+  answer: 1,
   required: 1,
   options: 1,
   single_choice: 1,
@@ -67,5 +68,5 @@ AnswerSchema.statics.whitelist = {
 };
 
 
-// Expose Answer model
-module.exports = mongoose.model('Answer', AnswerSchema);
+// Expose Question model
+module.exports = mongoose.model('Question', QuestionSchema);

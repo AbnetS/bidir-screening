@@ -17,10 +17,15 @@ const validator  = require('validator');
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const googleBuckets      = require('../lib/google-buckets');
+const checkPermissions   = require('../lib/permissions');
 
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
 const LogDal             = require('../dal/log');
+const ScreeningDal       = require('../dal/screening');
+const FormDal            = require('../dal/form');
+const AccountDal         = require('../dal/account');
+const AnswerDal          = require('../dal/answer');
 
 
 /**
@@ -33,6 +38,14 @@ const LogDal             = require('../dal/log');
  */
 exports.create = function* createClient(next) {
   debug('create client');
+
+  let isPermitted = yield checkPermissions.isPermitted(this.state._user, 'manage_clients_create');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_CREATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
 
   let body = this.request.body;
   let bodyKeys = Object.keys(body);
@@ -63,7 +76,7 @@ exports.create = function* createClient(next) {
   if(!body.gender) errors.push('Client Gender is Empty');
   if(!body.national_id_no) errors.push('Client National Id No is Empty');
   if(!body.branch || !validator.isMongoId(body.branch)) errors.push('Client Related Branch is Empty');
-  if(!body.created_by|| !validator.isMongoId(body.created_by)) errors.push('Client Created By is Empty');
+  //if(!body.created_by|| !validator.isMongoId(body.created_by)) errors.push('Client Created By is Empty');
   if(!body.civil_status) errors.push('Client Civil Status is Empty');
   if(!body.household_members_count) errors.push('Client household_members_count is Empty');
   if(body.civil_status.toLowerCase() !== 'single' && !body.spouse) {
@@ -78,6 +91,15 @@ exports.create = function* createClient(next) {
   }
 
   try {
+    let screeningForm = yield FormDal.get({ type: 'Screening' });
+    if(!screeningForm || !screeningForm._id) {
+      throw new Error('Screening Form Is Needed To Be Created In Order To Continue!')
+    }
+
+    let client = yield ClientDal.get({ national_id_no: body.national_id_no });
+    if(client) {
+      throw new Error('Client with those details already exists!!');
+    }
 
     if(body.national_id_card) {
       let filename  = body.first_name.trim().toUpperCase().split(/\s+/).join('_');
@@ -110,13 +132,45 @@ exports.create = function* createClient(next) {
       }
     }
 
-    let client = yield ClientDal.get({ phone: body.phone });
-    if(client) {
-      throw new Error('Client with those details already exists!!');
-    }
 
     // Create Client Type
     client = yield ClientDal.create(body);
+
+    // Create New Screening
+    let answers = [];
+    let screeningBody = {};
+    screeningForm = screeningForm.toJSON();
+
+    // Create Answer Types
+    for(let question of screeningForm.questions) {
+      let subs = [];
+      delete question._id;
+
+      if(question.sub_questions.length) {
+        for(let sub of question.sub_questions) {
+          delete sub._id;
+          let ans = yield AnswerDal.create(sub);
+
+          subs.push(ans);
+        }
+      }
+      question.sub_questions = subs;
+
+      let answer = yield AnswerDal.create(question);
+
+      answers.push(answer);
+    }
+
+    let account = yield AccountDal.get({ user: this.state._user._id });
+
+    screeningBody.answers = answers;
+    screeningBody.client = client._id;
+    screeningBody.title = 'Screening Form';
+    screeningBody.description = `Screening Process For ${client.first_name} ${client.last_name}`;
+    screeningBody.created_by = account._id;
+
+    // Create Screening Type
+    let screening = yield ScreeningDal.create(screeningBody);
 
     this.body = client;
 

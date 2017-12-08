@@ -1,86 +1,76 @@
 'use strict';
-// Access Layer for Screening Data.
+// Access Layer for Notification Data.
 
 /**
  * Load Module Dependencies.
  */
-const debug   = require('debug')('api:dal-screening');
+const debug   = require('debug')('api:dal-notification');
 const moment  = require('moment');
 const _       = require('lodash');
 const co      = require('co');
 
-const Screening     = require('../models/screening');
-const Answer        = require('../models/answer');
+const Notification        = require('../models/notification');
 const mongoUpdate   = require('../lib/mongo-update');
 
-var returnFields = Screening.attributes;
-var population = [{
-  path: 'answers',
-  select: Answer.attributes,
-  populate: {
-    path: 'sub_answers',
-    select: Answer.attributes
-  }
-}];
+var returnFields = Notification.attributes;
+var population = [];
 
 /**
- * create a new screening.
+ * create a new notification.
  *
- * @desc  creates a new screening and saves them
+ * @desc  creates a new notification and saves them
  *        in the database
  *
- * @param {Object}  screeningData  Data for the screening to create
+ * @param {Object}  notificationData  Data for the notification to create
  *
  * @return {Promise}
  */
-exports.create = function create(screeningData) {
-  debug('creating a new screening');
+exports.create = function create(notificationData) {
+  debug('creating a new notification');
 
   return co(function* () {
+    let unsavedNotification = new Notification(notificationData);
+    let newNotification = yield unsavedNotification.save();
+    let notification = yield exports.get({ _id: newNotification._id });
 
-    let unsavedScreening = new Screening(screeningData);
-    let newScreening = yield unsavedScreening.save();
-    let screening = yield exports.get({ _id: newScreening._id });
-
-    return screening;
-
+    return notification;
 
   });
 
 };
 
 /**
- * delete a screening
+ * delete a notification
  *
- * @desc  delete data of the screening with the given
+ * @desc  delete data of the notification with the given
  *        id
  *
  * @param {Object}  query   Query Object
  *
  * @return {Promise}
  */
-exports.delete = function deleteScreening(query) {
-  debug('deleting screening: ', query);
+exports.delete = function deleteNotification(query) {
+  debug('deleting notification: ', query);
 
   return co(function* () {
-    let screening = yield exports.get(query);
+    let notification = yield exports.get(query);
     let _empty = {};
 
-    if(!screening) {
+    if(!notification) {
       return _empty;
     } else {
-      yield screening.remove();
+      yield notification.remove();
 
-      return screening;
+      return notification;
     }
 
   });
 };
 
 /**
- * update a screening
+ * update a notification
  *
- * @desc  update data of the screening with the given
+ * @desc  update data of the notification with the given
  *        id
  *
  * @param {Object} query Query object
@@ -89,7 +79,7 @@ exports.delete = function deleteScreening(query) {
  * @return {Promise}
  */
 exports.update = function update(query, updates) {
-  debug('updating screening: ', query);
+  debug('updating notification: ', query);
 
   let now = moment().toISOString();
   let opts = {
@@ -99,44 +89,44 @@ exports.update = function update(query, updates) {
 
   updates = mongoUpdate(updates);
 
-  return Screening.findOneAndUpdate(query, updates, opts)
+  return Notification.findOneAndUpdate(query, updates, opts)
       .populate(population)
       .exec();
 };
 
 /**
- * get a screening.
+ * get a notification.
  *
- * @desc get a screening with the given id from db
+ * @desc get a notification with the given id from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
-exports.get = function get(query, screening) {
-  debug('getting screening ', query);
+exports.get = function get(query, notification) {
+  debug('getting notification ', query);
 
-  return Screening.findOne(query, returnFields)
+  return Notification.findOne(query, returnFields)
     .populate(population)
     .exec();
 
 };
 
 /**
- * get a collection of screenings
+ * get a collection of notifications
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of notifications from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollection = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of notifications');
 
   return new Promise((resolve, reject) => {
     resolve(
-     Screening
+     Notification
       .find(query, returnFields)
       .populate(population)
       .stream());
@@ -146,16 +136,16 @@ exports.getCollection = function getCollection(query, qs) {
 };
 
 /**
- * get a collection of screenings using pagination
+ * get a collection of notifications using pagination
  *
- * @desc get a collection of screenings from db
+ * @desc get a collection of notifications from db
  *
  * @param {Object} query Query Object
  *
  * @return {Promise}
  */
 exports.getCollectionByPagination = function getCollection(query, qs) {
-  debug('fetching a collection of screenings');
+  debug('fetching a collection of notifications');
 
   let opts = {
     select:  returnFields,
@@ -167,7 +157,7 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 
 
   return new Promise((resolve, reject) => {
-    Screening.paginate(query, opts, function (err, docs) {
+    Notification.paginate(query, opts, function (err, docs) {
       if(err) {
         return reject(err);
       }
