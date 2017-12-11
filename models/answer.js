@@ -51,7 +51,7 @@ AnswerSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Answer Attributes to expose
  */
-AnswerSchema.statics.whitelist = {
+AnswerSchema.statics.attributes = {
   question_text: 1,
   remark: 1,
   sub_questions: 1,

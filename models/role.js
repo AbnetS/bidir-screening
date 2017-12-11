@@ -43,7 +43,7 @@ RoleSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Role Attributes to expose
  */
-RoleSchema.statics.whitelist = {
+RoleSchema.statics.attributes = {
   _id: 1,
   name: 1,
   description: 1,

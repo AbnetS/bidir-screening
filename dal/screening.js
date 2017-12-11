@@ -159,7 +159,7 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 
   let opts = {
     select:  returnFields,
-    sortBy:   qs.sort || {},
+    sort:   qs.sort || {},
     populate: population,
     page:     qs.page,
     limit:    qs.limit

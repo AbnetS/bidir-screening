@@ -27,6 +27,8 @@ const FormDal            = require('../dal/form');
 const AccountDal         = require('../dal/account');
 const AnswerDal          = require('../dal/answer');
 
+let hasPermission = checkPermissions.isPermitted('CLIENT');
+
 
 /**
  * Create a client.
@@ -39,7 +41,7 @@ const AnswerDal          = require('../dal/answer');
 exports.create = function* createClient(next) {
   debug('create client');
 
-  let isPermitted = yield checkPermissions.isPermitted(this.state._user, 'manage_clients_create');
+  let isPermitted = yield hasPermission(this.state._user, 'CREATE');
   if(!isPermitted) {
     return this.throw(new CustomError({
       type: 'CLIENT_CREATE_ERROR',
@@ -313,7 +315,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
 
   let sortType = this.query.sort_by;
   let sort = {};
-  sortType ? (sort[sortType] = 1) : null;
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
 
   let opts = {
     page: +page,

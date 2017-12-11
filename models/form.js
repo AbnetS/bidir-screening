@@ -48,7 +48,7 @@ FormSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Form Attributes to expose
  */
-FormSchema.statics.whitelist = {
+FormSchema.statics.attributes = {
   type: 1,
   name: 1,
   title: 1,

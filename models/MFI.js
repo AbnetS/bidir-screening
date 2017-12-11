@@ -49,8 +49,18 @@ MFISchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter MFI Attributes to expose
  */
-MFISchema.statics.whitelist = {
-  '__v' : 0 
+MFISchema.statics.attributes = {
+  name: 1,
+  location: 1,
+  logo:  1,
+  establishment_year: 1,
+  website_link:  1,
+  email:  1,
+  phone:  1,
+  contact_person: 1,
+  branches: 1,
+  date_created: 1,
+  last_modified:  1
 };
 
 

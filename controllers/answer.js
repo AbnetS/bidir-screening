@@ -151,7 +151,7 @@ exports.fetchAllByPagination = function* fetchAllAnswers(next) {
 
   let sortType = this.query.sort_by;
   let sort = {};
-  sortType ? (sort[sortType] = 1) : null;
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
 
   let opts = {
     page: +page,

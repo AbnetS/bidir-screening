@@ -43,7 +43,7 @@ NotificationSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Notification Attributes to expose
  */
-NotificationSchema.statics.whitelist = {
+NotificationSchema.statics.attributes = {
   _id: 1,
   message: 1,
   for: 1,

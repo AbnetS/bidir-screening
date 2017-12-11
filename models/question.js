@@ -51,7 +51,7 @@ QuestionSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Question Attributes to expose
  */
-QuestionSchema.statics.whitelist = {
+QuestionSchema.statics.attributes = {
   question_text: 1,
   remark: 1,
   sub_questions: 1,

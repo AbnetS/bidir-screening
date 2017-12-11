@@ -24,7 +24,9 @@ const AnswerDal          = require('../dal/answer');
 const LogDal             = require('../dal/log');
 const NotificationDal    = require('../dal/notification');
 const ClientDal          = require('../dal/client');
+const TaskDal            = require('../dal/task');
 
+let hasPermission = checkPermissions.isPermitted('SCREENING');
 
 /**
  * Create a screening.
@@ -102,6 +104,14 @@ exports.create = function* createScreening(next) {
 exports.fetchOne = function* fetchOneScreening(next) {
   debug(`fetch screening: ${this.params.id}`);
 
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'SCREENING_STATUS_UPDATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
   let query = {
     _id: this.params.id
   };
@@ -136,7 +146,7 @@ exports.fetchOne = function* fetchOneScreening(next) {
 exports.updateStatus = function* updateScreening(next) {
   debug(`updating status screening: ${this.params.id}`);
 
-  let isPermitted = yield checkPermissions.isPermitted(this.state._user, 'AUTHORIZE');
+  let isPermitted = yield hasPermission(this.state._user, 'AUTHORIZE');
   if(!isPermitted) {
     return this.throw(new CustomError({
       type: 'SCREENING_STATUS_UPDATE_ERROR',
@@ -146,7 +156,7 @@ exports.updateStatus = function* updateScreening(next) {
 
   this.checkBody('status')
       .notEmpty('Status should not be empty')
-      .isIn(['incomplete','approved', 'completed','declined', 'submitted'], 'Correct Status is either incomplete, declined, approved, submitted or completed');
+      .isIn(['inprogress','approved', 'submitted','declined_final', 'declined_under_review'], 'Correct Status is either inprogress, declined_final, approved, submitted or declined_under_review');
 
   let query = {
     _id: this.params.id
@@ -158,19 +168,24 @@ exports.updateStatus = function* updateScreening(next) {
 
     let screening = yield ScreeningDal.get(query);
 
+    if(screening.status === 'new') {
+      let client = yield ClientDal.update({ _id: screening.client }, { status: 'inprogress' });
+    }
+
     if(screening.status == body.status) {
       throw new Error(`Screening Is Already ${body.status}`);
     }
 
     screening = yield ScreeningDal.update(query, body);
 
-    if(body.status === 'declined') {
+    /*if(body.status === 'declined') {
       let client = yield ClientDal.get({ _id: screening.client });
+
       yield NotificationDal.create({
         for: screening.created_by,
         message: `Screening for ${client.first_name} ${client.last_name} has been declined.`
       });
-    }
+    }*/
 
     yield LogDal.track({
       event: 'screening_status_update',
@@ -202,12 +217,33 @@ exports.updateStatus = function* updateScreening(next) {
 exports.update = function* updateScreening(next) {
   debug(`updating screening: ${this.params.id}`);
 
+  let isPermitted = yield hasPermission(this.state._user, 'UPDATE');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'SCREENING_STATUS_UPDATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
+  this.checkBody('status')
+      .notEmpty('Screening Status is Empty')
+      .isIn(['inprogress', 'submitted'], 'Correct Status is either inprogress, or submitted');
+
   let query = {
     _id: this.params.id
   };
+
   let body = this.request.body;
 
   try {
+    let screening = yield ScreeningDal.get(query);
+    let client    = yield ClientDal.get({ _id: screening.client });
+
+    if(screening.status === 'new') {
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'inprogress' });
+    }
+    
+    let mandatory = false;
 
     if(body.answers) {
       let answers = [];
@@ -228,7 +264,18 @@ exports.update = function* updateScreening(next) {
       body.answers = answers;
     }
 
-    let screening = yield ScreeningDal.update(query, body);
+    screening = yield ScreeningDal.update(query, body);
+
+    if(body.status && body.status === 'submitted') {
+      // Create Task
+      yield TaskDal.create({
+        task: `Approve Screening For of ${client.first_name} ${client.last_name}`,
+        task_type: 'approve',
+        entity_ref: screening._id,
+        entity_type: 'screening',
+        created_by: this.state._user._id
+      })
+    }
 
     yield LogDal.track({
       event: 'screening_update',
@@ -266,7 +313,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
 
   let sortType = this.query.sort_by;
   let sort = {};
-  sortType ? (sort[sortType] = 1) : null;
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
 
   let opts = {
     page: +page,

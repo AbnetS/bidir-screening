@@ -50,7 +50,7 @@ ScreeningSchema.pre('save', function preSaveMiddleware(next) {
 /**
  * Filter Screening Attributes to expose
  */
-ScreeningSchema.statics.whitelist = {
+ScreeningSchema.statics.attributes = {
   type: 1,
   name: 1,
   title: 1,
