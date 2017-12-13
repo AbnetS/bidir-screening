@@ -167,8 +167,7 @@ exports.create = function* createClient(next) {
     if(!account) {
       account = this.state._user;
     }
-
-    console.log(client, account);
+    
 
     screeningBody.answers = answers;
     screeningBody.client = client._id;
