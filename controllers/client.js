@@ -162,8 +162,13 @@ exports.create = function* createClient(next) {
 
       answers.push(answer);
     }
-
+ 
     let account = yield AccountDal.get({ user: this.state._user._id });
+    if(!account) {
+      account = this.state._user;
+    }
+
+    console.log(client, account);
 
     screeningBody.answers = answers;
     screeningBody.client = client._id;
