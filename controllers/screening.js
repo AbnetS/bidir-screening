@@ -146,6 +146,9 @@ exports.fetchOne = function* fetchOneScreening(next) {
 exports.updateStatus = function* updateScreening(next) {
   debug(`updating status screening: ${this.params.id}`);
 
+  return this.body = { message: 'Use PUT /screenings/:id' };
+  
+
   let isPermitted = yield hasPermission(this.state._user, 'AUTHORIZE');
   if(!isPermitted) {
     return this.throw(new CustomError({
@@ -225,9 +228,11 @@ exports.update = function* updateScreening(next) {
     }));
   }
 
+  let canApprove = yield hasPermission(this.state._user, 'AUTHORIZE');
+
   this.checkBody('status')
-      .notEmpty('Screening Status is Empty')
-      .isIn(['inprogress', 'submitted'], 'Correct Status is either inprogress, or submitted');
+      .notEmpty('Status should not be empty')
+      .isIn(['inprogress','submitted', 'approved'], 'Correct Status is either inprogress, approved or submitted');
 
   let query = {
     _id: this.params.id
@@ -236,11 +241,20 @@ exports.update = function* updateScreening(next) {
   let body = this.request.body;
 
   try {
+    if(body.status === 'approved') {
+      if(!canApprove) {
+        throw new Error("You Don't have enough permissions to complete this action");
+      }
+    }
     let screening = yield ScreeningDal.get(query);
     let client    = yield ClientDal.get({ _id: screening.client });
 
     if(screening.status === 'new') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'inprogress' });
+    }
+
+    if(body.status === 'approved') {
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'eligible' });
     }
     
     let mandatory = false;

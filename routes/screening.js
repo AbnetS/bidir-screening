@@ -219,7 +219,8 @@ router.put('/:id', acl(['*']), screeningController.update);
  * @api {put} /screenings/:id/status Update Screening Status
  * @apiVersion 1.0.0
  * @apiName UpdateStatus
- * @apiGroup Screening 
+ * @apiGroup Screening
+ * @apiPermission DEPRECATED
  *
  * @apiDescription Update a Screening status with the given id
  *
