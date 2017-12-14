@@ -233,8 +233,8 @@ exports.fetchOne = function* fetchOneClient(next) {
 exports.updateStatus = function* updateClient(next) {
   debug(`updating status client: ${this.params.id}`);
 
-  this.checkBody('is_active')
-      .notEmpty('is_active should not be empty');
+  this.checkBody('status')
+      .notEmpty('status should not be empty');
 
   let query = {
     _id: this.params.id

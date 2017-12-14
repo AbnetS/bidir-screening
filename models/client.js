@@ -40,6 +40,7 @@ var ClientSchema = new Schema({
   email:          { type: String, default: '' },
   phone:          { type: String, default: '' },
   household_members_count: { type: String, default: "0" },
+  status:         { type: String, default: 'new' },
   date_created:   { type: Date },
   last_modified:  { type: Date }
 });
@@ -67,6 +68,7 @@ ClientSchema.statics.attributes = {
   phone:          1,
   household_members_count: 1,
   geolocation: 1,
+  status: 1,
   date_created:   1,
   last_modified:  1,
   _id: 1
