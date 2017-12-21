@@ -232,7 +232,7 @@ exports.update = function* updateScreening(next) {
 
   this.checkBody('status')
       .notEmpty('Status should not be empty')
-      .isIn(['inprogress','submitted', 'approved'], 'Correct Status is either inprogress, approved or submitted');
+      .isIn(['inprogress','submitted', 'approved','declined_final', 'declined_under_review'], 'Correct Status is either inprogress, approved, submitted, declined_final or declined_under_review');
 
   let query = {
     _id: this.params.id
@@ -241,7 +241,7 @@ exports.update = function* updateScreening(next) {
   let body = this.request.body;
 
   try {
-    if(body.status === 'approved') {
+    if(body.status === 'approved' || body.status === 'declined_final' || body.status === 'declined_under_review' ) {
       if(!canApprove) {
         throw new Error("You Don't have enough permissions to complete this action");
       }
@@ -255,6 +255,31 @@ exports.update = function* updateScreening(next) {
 
     if(body.status === 'approved') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'eligible' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      yield NotificationDal.create({
+        for: task.created_by,
+        message: `Screening of ${client.first_name} ${client.last_name} has been approved`,
+        task_ref: task._id
+      });
+
+    } else if(body.status === 'declined_final') {
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'ineligible' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      yield NotificationDal.create({
+        for: task.created_by,
+        message: `Screening of ${client.first_name} ${client.last_name} has been declined in Final`,
+        task_ref: task._id
+      });
+
+    } else if(body.status === 'declined_under_review') {
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'ineligible' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      yield NotificationDal.create({
+        for: task.created_by,
+        message: `Screening of ${client.first_name} ${client.last_name} has been declined For Further Review`,
+        task_ref: task._id
+      });
+
     }
     
     let mandatory = false;
