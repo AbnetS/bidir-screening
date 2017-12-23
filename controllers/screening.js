@@ -250,7 +250,7 @@ exports.update = function* updateScreening(next) {
     let client    = yield ClientDal.get({ _id: screening.client });
 
     if(screening.status === 'new') {
-      client = yield ClientDal.update({ _id: screening.client }, { status: 'inprogress' });
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
     }
 
     if(body.status === 'approved') {
@@ -272,7 +272,7 @@ exports.update = function* updateScreening(next) {
       });
 
     } else if(body.status === 'declined_under_review') {
-      client = yield ClientDal.update({ _id: screening.client }, { status: 'ineligible' });
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
       let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
       yield NotificationDal.create({
         for: task.created_by,
