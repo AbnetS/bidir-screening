@@ -223,7 +223,7 @@ exports.update = function* updateScreening(next) {
   let isPermitted = yield hasPermission(this.state._user, 'UPDATE');
   if(!isPermitted) {
     return this.throw(new CustomError({
-      type: 'SCREENING_STATUS_UPDATE_ERROR',
+      type: 'SCREENING_UPDATE_ERROR',
       message: "You Don't have enough permissions to complete this action"
     }));
   }
@@ -233,6 +233,13 @@ exports.update = function* updateScreening(next) {
   this.checkBody('status')
       .notEmpty('Status should not be empty')
       .isIn(['inprogress','submitted', 'approved','declined_final', 'declined_under_review'], 'Correct Status is either inprogress, approved, submitted, declined_final or declined_under_review');
+
+  if(this.errors) {
+    return this.throw(new CustomError({
+      type: 'SCREENING_UPDATE_ERROR',
+      message: JSON.stringify(this.errors)
+    }));
+  }
 
   let query = {
     _id: this.params.id
@@ -327,7 +334,7 @@ exports.update = function* updateScreening(next) {
 
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'UPDATE_SCREENING_ERROR',
+      type: 'SCREENING_UPDATE_ERROR',
       message: ex.message
     }));
 
