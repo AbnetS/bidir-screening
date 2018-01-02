@@ -399,6 +399,10 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
     let account = yield Account.findOne({ user: user._id }).exec();
 
     if(this.query.source == 'app') {
+      if(user.role == 'super' || user.realm == 'super' || !account) {
+        throw new Error('Please View Using Web!!');
+      }
+      
       query = {
         created_by: account._id
       };
