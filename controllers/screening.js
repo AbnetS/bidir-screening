@@ -18,6 +18,8 @@ const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const checkPermissions   = require('../lib/permissions');
 
+const Account            = require('../models/account');
+
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
 const AnswerDal          = require('../dal/answer');
