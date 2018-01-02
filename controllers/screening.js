@@ -401,8 +401,10 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
         created_by: account._id
       };
     } else if(this.query.source == 'web') {
-      query = {
-        branch: { $in: account.access_branches }
+      if(user.role != 'super' && user.realm != 'super') {
+        query = {
+          branch: { $in: account.access_branches }
+        };
       }
     }
 
