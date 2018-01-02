@@ -11,6 +11,7 @@ const co      = require('co');
 
 const Screening     = require('../models/screening');
 const Answer        = require('../models/answer');
+const Client        = require('../models/client');
 const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Screening.attributes;
@@ -21,6 +22,9 @@ var population = [{
     path: 'sub_answers',
     select: Answer.attributes
   }
+},{
+  path: 'client',
+  select: Client.attributes
 }];
 
 /**

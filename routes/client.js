@@ -42,7 +42,7 @@ var router  = Router();
  * @apiParam {String} phone Phone Number
  * @apiParam {Number} household_members_count Household Members Count
  * @apiParam {String} branch Branch Client is being registered for
- * @apiParam {String} created_by Officer Account registering this
+ * @apiParam {String} created_by User registering this
  *
  * @apiParamExample Request Example:
  *  {
@@ -88,7 +88,7 @@ var router  = Router();
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
  * @apiSuccess {Object} branch Branch Client is being registered for
- * @apiSuccess {Object} created_by Officer Account registering this
+ * @apiSuccess {Object} created_by User registering this
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -164,7 +164,7 @@ router.post('/create', acl('*'), clientController.create);
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
  * @apiSuccess {Object} branch Branch Client is being registered for
- * @apiSuccess {Object} created_by Officer Account registering this
+ * @apiSuccess {Object} created_by User registering this
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -240,7 +240,7 @@ router.get('/paginate', acl(['*']), clientController.fetchAllByPagination);
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
  * @apiSuccess {Object} branch Branch Client is being registered for
- * @apiSuccess {Object} created_by Officer Account registering this
+ * @apiSuccess {Object} created_by User registering this
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -321,7 +321,7 @@ router.get('/:id', acl(['*']), clientController.fetchOne);
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
  * @apiSuccess {Object} branch Branch Client is being registered for
- * @apiSuccess {Object} created_by Officer Account registering this
+ * @apiSuccess {Object} created_by User registering this
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -394,7 +394,7 @@ router.put('/:id', acl(['*']), clientController.update);
  * @apiSuccess {String} phone Phone Number
  * @apiSuccess {Number} household_members_count Household Members Count
  * @apiSuccess {Object} branch Branch Client is being registered for
- * @apiSuccess {Object} created_by Officer Account registering this
+ * @apiSuccess {Object} created_by User registering this
  *
  * @apiSuccessExample Response Example:
  *  {

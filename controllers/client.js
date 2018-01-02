@@ -166,17 +166,13 @@ exports.create = function* createClient(next) {
 
       answers.push(answer);
     }
- 
-    let account = yield AccountDal.get({ user: this.state._user._id });
-    if(!account) {
-      account = this.state._user;
-    }
 
     screeningBody.answers = answers;
     screeningBody.client = client._id;
     screeningBody.title = 'Screening Form';
-    screeningBody.description = `Screening Process For ${client.first_name} ${client.last_name}`;
-    screeningBody.created_by = account._id;
+    screeningBody.description = `Screening Application For ${client.first_name} ${client.last_name}`;
+    screeningBody.created_by = this.state._user._id;
+    screeningBody.branch = client.branch._id;
 
     // Create Screening Type
     let screening = yield ScreeningDal.create(screeningBody);

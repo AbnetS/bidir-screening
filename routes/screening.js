@@ -24,7 +24,7 @@ var router  = Router();
  * @apiParam {String} title Screening Title
  * @apiParam {String} process Screening Process
  * @apiParam {Array} answers Screening Answers
- * @apiParam {String} created_by Officer Account registering this
+ * @apiParam {String} created_by User registering this
  * @apiParam {String} client Client Reference being screened
  * @apiParam {String} [status] Status ie incomplete, completed, cancelled, approved or submitted
  *
@@ -52,7 +52,7 @@ var router  = Router();
  * @apiSuccess {String} title Screening Title
  * @apiSuccess {String} process Screening Process
  * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
@@ -98,7 +98,7 @@ router.post('/create', acl(['*']), screeningController.create);
  * @apiSuccess {String} title Screening Title
  * @apiSuccess {String} process Screening Process
  * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled , approved or submitted
  *
@@ -144,7 +144,7 @@ router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
  * @apiSuccess {String} title Screening Title
  * @apiSuccess {String} process Screening Process
  * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
@@ -191,7 +191,7 @@ router.get('/:id', acl(['*']), screeningController.fetchOne);
  * @apiSuccess {String} title Screening Title
  * @apiSuccess {String} process Screening Process
  * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
@@ -229,7 +229,7 @@ router.put('/:id', acl(['*']), screeningController.update);
  * @apiSuccess {String} title Screening Title
  * @apiSuccess {String} process Screening Process
  * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by Officer Account registering this
+ * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *

@@ -17,8 +17,9 @@ var ScreeningSchema = new Schema({
     description:    { type: String, default: '' },
     title:          { type: String, default: '' },
     answers:        [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
-    created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
+    created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     client:         { type: Schema.Types.ObjectId, ref: 'Client' },
+    branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     status:         { type: String, default: 'new' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
@@ -60,6 +61,7 @@ ScreeningSchema.statics.attributes = {
   created_by: 1,
   client: 1,
   status: 1,
+  branch: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1

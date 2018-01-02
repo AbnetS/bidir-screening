@@ -56,6 +56,11 @@ exports.create = function* createScreening(next) {
 
   try {
 
+    let client = yield ClientDal.get({ _id: body.client });
+    if(!client) {
+      throw new Error('Client With Those Details Does Not Exist!!');
+    }
+
     let screening = yield ScreeningDal.get({ client: body.client });
     if(screening) {
       throw new Error('Screening Form for the client already exists!!');
@@ -81,6 +86,11 @@ exports.create = function* createScreening(next) {
     }
 
     body.answers = answers;
+    body.client = client._id;
+    body.title = 'Screening Form';
+    body.description = `Screening Application For ${client.first_name} ${client.last_name}`;
+    body.created_by = this.state._user._id;
+    body.branch = client.branch._id;
 
     // Create Screening Type
     screening = yield ScreeningDal.create(body);
@@ -405,20 +415,16 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       }
       
       query = {
-        created_by: account._id
+        created_by: user._id
       };
+
     } else if(this.query.source == 'web') {
       if(user.role != 'super' && user.realm != 'super') {
         if(account.access_branches.length) {
-          query.client =  {
-              branch: { $in: account.access_branches }
-            };
+          query.branch =  { $in: account.access_branches };
 
         } else if(account.default_branch) {
-          query.client = {
-            branch: account.default_branch
-          };
-
+          query.branch = account.default_branch;
         }
       }
     }
@@ -426,6 +432,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
     let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
 
     this.body = screenings;
+    
   } catch(ex) {
     return this.throw(new CustomError({
       type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
