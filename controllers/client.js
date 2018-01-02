@@ -136,6 +136,8 @@ exports.create = function* createClient(next) {
       }
     }
 
+    body.created_by = this.state._user._id;
+
 
     // Create Client Type
     client = yield ClientDal.create(body);
@@ -364,13 +366,18 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
       }
       
       query = {
-        created_by: account._id
+        created_by: user._id
       };
+
     } else if(this.query.source == 'web') {
       if(user.role != 'super' && user.realm != 'super') {
-        query = {
-          branch: { $in: account.access_branches }
-        };
+        if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+        } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+        }
       }
     }
 

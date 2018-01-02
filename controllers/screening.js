@@ -13,6 +13,7 @@ const _          = require('lodash');
 const co         = require('co');
 const del        = require('del');
 const validator  = require('validator');
+const emquery    = require('emquery');
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
@@ -408,9 +409,17 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       };
     } else if(this.query.source == 'web') {
       if(user.role != 'super' && user.realm != 'super') {
-        query = {
-          branch: { $in: account.access_branches }
-        };
+        if(account.access_branches.length) {
+          query.client =  {
+              branch: { $in: account.access_branches }
+            };
+
+        } else if(account.default_branch) {
+          query.client = {
+            branch: account.default_branch
+          };
+
+        }
       }
     }
 

@@ -14,7 +14,7 @@ var Schema = mongoose.Schema;
 // New Client Schema model
 var ClientSchema = new Schema({
   branch:         { type: Schema.Types.ObjectId, ref: 'Branch'},
-  created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
+  created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
   picture:        { type: String, default: '' },
   gender:         { type: String, default: 'SELECT' },
   first_name:     { type: String, default: '' },

@@ -13,13 +13,13 @@ const crypto  = require('crypto');
 
 const Client     = require('../models/client');
 const Branch      = require('../models/branch');
-const Account      = require('../models/account');
+const User      = require('../models/user');
 const mongoUpdate = require('../lib/mongo-update');
 
 const returnFields = Client.attributes;
 var population = [{
-  path: 'account',
-  select: Account.attributes
+  path: 'created_by',
+  select: User.attributes
 },{
   path: 'branch',
   select: Branch.attributes
