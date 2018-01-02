@@ -368,7 +368,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   let limit  = this.query.per_page || 10;
   let query = {};
 
-  if(!this.query.source || (this.query.source != 'web') || (this.query.source != 'app')) {
+  if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
     return this.throw(new CustomError({
       type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
       message: 'Query Source should be either web or app'
