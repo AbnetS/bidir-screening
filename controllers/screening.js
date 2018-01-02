@@ -361,11 +361,26 @@ exports.update = function* updateScreening(next) {
 exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   debug('get a collection of screenings by pagination');
 
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
   let query = {};
 
+  if(!this.query.source || (this.query.source != 'web') || (this.query.source != 'app')) {
+    return this.throw(new CustomError({
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
+      message: 'Query Source should be either web or app'
+    }));
+  }
+
+  if(this.query.source == 'web' && !isPermitted) {
+    return this.throw(new CustomError({
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
   let sortType = this.query.sort_by;
   let sort = {};
   sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
@@ -377,12 +392,26 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   };
 
   try {
+    
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+
+    if(this.query.source == 'app') {
+      query = {
+        created_by: account._id
+      };
+    } else if(this.query.source == 'web') {
+      query = {
+        branch: { $in: account.access_branches }
+      }
+    }
+
     let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
 
     this.body = screenings;
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'FETCH_PAGINATED_SCREENINGS_COLLECTION_ERROR',
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
       message: ex.message
     }));
   }

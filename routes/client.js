@@ -138,7 +138,7 @@ router.post('/create', acl('*'), clientController.create);
  *
  * @apiDescription Get a collection of clients. The endpoint has pagination
  * out of the box. Use these params to query with pagination: `page=<RESULTS_PAGE`
- * and `per_page=<RESULTS_PER_PAGE>`.
+ * and `per_page=<RESULTS_PER_PAGE>`. __QUERY SOURCE MUST BE SPECIFIED LIKE ?source=<web|app>__
  *
  * @apiSuccess {String} _id client id
  * @apiSuccess {String} first_name First Name

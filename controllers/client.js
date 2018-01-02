@@ -19,6 +19,8 @@ const CustomError        = require('../lib/custom-error');
 const googleBuckets      = require('../lib/google-buckets');
 const checkPermissions   = require('../lib/permissions');
 
+const Account            = require('../models/account');
+
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
 const LogDal             = require('../dal/log');
@@ -216,7 +218,7 @@ exports.fetchOne = function* fetchOneClient(next) {
 
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'CLIENT_RETRIEVAL_ERROR',
+      type: 'CLIENT_VIEW_ERROR',
       message: ex.message
     }));
   }
@@ -232,6 +234,8 @@ exports.fetchOne = function* fetchOneClient(next) {
  */
 exports.updateStatus = function* updateClient(next) {
   debug(`updating status client: ${this.params.id}`);
+
+  return this.body = { message: 'use PUT /screenings/clients/:id'}
 
   this.checkBody('status')
       .notEmpty('status should not be empty');
@@ -274,6 +278,14 @@ exports.updateStatus = function* updateClient(next) {
 exports.update = function* updateClient(next) {
   debug(`updating client: ${this.params.id}`);
 
+  let isPermitted = yield hasPermission(this.state._user, 'UPDATE');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_UPDATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
   let query = {
     _id: this.params.id
   };
@@ -311,10 +323,26 @@ exports.update = function* updateClient(next) {
 exports.fetchAllByPagination = function* fetchAllClients(next) {
   debug('get a collection of clients by pagination');
 
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
   let query = {};
+
+  if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
+    return this.throw(new CustomError({
+      type: 'VIEW_CLIENTS_COLLECTION_ERROR',
+      message: 'Query Source should be either web or app'
+    }));
+  }
+
+  if(this.query.source == 'web' && !isPermitted) {
+    return this.throw(new CustomError({
+      type: 'VIEW_CLIENTS_COLLECTION_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
 
   let sortType = this.query.sort_by;
   let sort = {};
@@ -327,12 +355,28 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   };
 
   try {
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+
+    if(this.query.source == 'app') {
+      query = {
+        created_by: account._id
+      };
+    } else if(this.query.source == 'web') {
+      if(user.role != 'super' && user.realm != 'super') {
+        query = {
+          branch: { $in: account.access_branches }
+        };
+      }
+    }
+
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
     this.body = clients;
+
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'FETCH_PAGINATED_CLIENTS_COLLECTION_ERROR',
+      type: 'VIEW_CLIENTS_COLLECTION_ERROR',
       message: ex.message
     }));
   }
