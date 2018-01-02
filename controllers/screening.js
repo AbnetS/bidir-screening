@@ -262,7 +262,7 @@ exports.update = function* updateScreening(next) {
 
     if(body.status === 'approved') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'eligible' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
       yield NotificationDal.create({
         for: task.created_by,
         message: `Screening of ${client.first_name} ${client.last_name} has been approved`,
@@ -271,7 +271,7 @@ exports.update = function* updateScreening(next) {
 
     } else if(body.status === 'declined_final') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'ineligible' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
       yield NotificationDal.create({
         for: task.created_by,
         message: `Screening of ${client.first_name} ${client.last_name} has been declined in Final`,
@@ -280,7 +280,7 @@ exports.update = function* updateScreening(next) {
 
     } else if(body.status === 'declined_under_review') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'done' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
       // Create Review Task
       let _task = yield TaskDal.create({
         task: `Review Screening Application of ${client.first_name} ${client.last_name}`,
