@@ -412,6 +412,8 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
     sort: sort
   };
 
+  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+
   try {
     
     let user = this.state._user;
@@ -426,6 +428,14 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
         query = {
           created_by: user._id
         };
+      } else if(canViewAll) {
+        if(account.access_branches.length) {
+          query.access_branches = { $in: account.access_branches };
+
+        } else if(account.default_branch) {
+          query.default_branch = account.default_branch;
+
+        }
       }
 
     } else if(this.query.source == 'web') {
