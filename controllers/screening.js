@@ -421,18 +421,21 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       if(user.role == 'super' || user.realm == 'super' || !account) {
         throw new Error('Please View Using Web!!');
       }
-      
-      query = {
-        created_by: user._id
-      };
+
+      if(!account.multi_branch) {
+        query = {
+          created_by: user._id
+        };
+      }
 
     } else if(this.query.source == 'web') {
-      if(user.role != 'super' && user.realm != 'super') {
+      if(!account.multi_branch) {
         if(account.access_branches.length) {
-          query.branch =  { $in: account.access_branches };
+          query.access_branches = { $in: account.access_branches };
 
         } else if(account.default_branch) {
-          query.branch = account.default_branch;
+          query.default_branch = account.default_branch;
+
         }
       }
     }
