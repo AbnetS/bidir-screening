@@ -328,7 +328,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   let limit  = this.query.per_page || 10;
   let query = {};
 
-  if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
+  /*if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
     return this.throw(new CustomError({
       type: 'VIEW_CLIENTS_COLLECTION_ERROR',
       message: 'Query Source should be either web or app'
@@ -340,7 +340,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
       type: 'VIEW_CLIENTS_COLLECTION_ERROR',
       message: "You Don't have enough permissions to complete this action"
     }));
-  }
+  }*/
 
   let sortType = this.query.sort_by;
   let sort = {};
@@ -353,13 +353,41 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   };
 
   let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
 
 
   try {
     let user = this.state._user;
     let account = yield Account.findOne({ user: user._id }).exec();
 
-    if(this.query.source == 'app') {
+    // Super Admin
+    if (!account) {
+        query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+      }
+
+    // Can VIEW
+    } else if(canView) {
+        query = {
+          created_by: user._id
+        };
+
+    // DEFAULT
+    } else {
+      query = {
+          created_by: user._id
+        };
+    }
+
+    /*if(this.query.source == 'app') {
       if(!account) {
         throw new Error('Please View Using Web!!');
       }
@@ -389,7 +417,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
         }
       }
     }
-
+*/
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
     this.body = clients;

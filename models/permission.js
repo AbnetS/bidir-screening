@@ -17,7 +17,7 @@ var PermissionSchema = new Schema({
     entity:         { type: String, required: true },
     module:         { 
       type: String, 
-      enums:[enums.MODULES.MFI_SETUP,enums.MODULES.USER_MANAGEMENT]
+      //enums:[enums.MODULES.MFI_SETUP,enums.MODULES.USER_MANAGEMENT]
     },
     endpoints:  [{
       url: { type: String }
