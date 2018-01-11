@@ -544,6 +544,8 @@ exports.search = function* searchScreenings(next) {
       throw new Error('Please Provide A Search Term');
     }
 
+    searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
+
     query = {
       $or: [{
         title: searchTerm
