@@ -131,6 +131,55 @@ router.post('/create', acl(['*']), screeningController.create);
 router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
 
 /**
+ * @api {get} /screenings/search?page=<RESULTS_PAGE>&per_page=<RESULTS_PER_PAGE> Search screenings
+ * @apiVersion 1.0.0
+ * @apiName Search
+ * @apiGroup Screening
+ *
+ * @apiDescription Get a collection of screenings by search. The endpoint has pagination
+ * out of the box. Use these params to query with pagination: `page=<RESULTS_PAGE`
+ * and `per_page=<RESULTS_PER_PAGE>`. __QUERY SOURCE MUST BE SPECIFIED LIKE ?source=<web|app>__
+ *
+ * @apiSuccess {String} _id screening id
+ * @apiSuccess {String} type Screening Type ie Screening or Screening Application
+ * @apiSuccess {String} description Screening Description
+ * @apiSuccess {String} title Screening Title
+ * @apiSuccess {String} process Screening Process
+ * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} created_by User registering this
+ * @apiSuccess {String} client Client Reference being screened
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled , approved or submitted
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    "total_pages": 1,
+ *    "total_docs_count": 0,
+ *    "docs": [{
+ *    _id : "556e1174a8952c9521286a60",
+ *    type: "Screening",
+ *    description: "This is a Description",
+ *    title: "Screening Title",
+ *    process: "",
+ *    answers: ]{
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    }],
+ *    created_by: {
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    client: {
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    status: "incomplete"
+ *    }]
+ *  }
+ */
+router.get('/search', acl(['*']), screeningController.search);
+
+
+/**
  * @api {get} /screenings/:id Get Screening Screening
  * @apiVersion 1.0.0
  * @apiName Get

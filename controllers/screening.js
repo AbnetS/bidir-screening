@@ -510,3 +510,72 @@ exports.remove = function* removeScreening(next) {
   }
 
 };
+
+/**
+ * Search Screenings
+ *
+ * @desc Search a collection of screenings
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.search = function* searchScreenings(next) {
+  debug('get a collection of clients by pagination');
+
+  // retrieve pagination query params
+  let page   = this.query.page || 1;
+  let limit  = this.query.per_page || 10;
+  let query = {};
+
+  let sortType = this.query.sort_by;
+  let sort = {};
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
+
+  let opts = {
+    page: +page,
+    limit: +limit,
+    sort: sort
+  };
+
+
+  try {
+
+    let searchTerm = this.query.search;
+    if(!searchTerm) {
+      throw new Error('Please Provide A Search Term');
+    }
+
+    query = {
+      $or: [{
+        title: searchTerm
+      },{
+        description: searchTerm
+      },{
+        status: searchTerm
+      }]
+    }
+
+    if(validator.isMongoId(searchTerm)) {
+      query.$or.push({
+        branch: searchTerm
+      });
+
+      query.$or.push({
+        created_by: searchTerm
+      });
+
+      query.$or.push({
+        client: searchTerm
+      })
+    }
+   
+    let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
+
+    this.body = screenings;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'SEARCH_SCREENINGS_ERROR',
+      message: ex.message
+    }));
+  }
+};

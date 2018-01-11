@@ -468,3 +468,78 @@ exports.remove = function* removeClient(next) {
   }
 
 };
+
+/**
+ * Search Clients
+ *
+ * @desc Search a collection of clients
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.search = function* searchClients(next) {
+  debug('get a collection of clients by pagination');
+
+  // retrieve pagination query params
+  let page   = this.query.page || 1;
+  let limit  = this.query.per_page || 10;
+  let query = {};
+
+  let sortType = this.query.sort_by;
+  let sort = {};
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
+
+  let opts = {
+    page: +page,
+    limit: +limit,
+    sort: sort
+  };
+
+
+  try {
+
+    let searchTerm = this.query.search;
+    if(!searchTerm) {
+      throw new Error('Please Provide A Search Term');
+    }
+
+    query = {
+      $or: [{
+        gender: searchTerm
+      },{
+        first_name: searchTerm
+      },{
+        last_name: searchTerm
+      },{
+        national_id_no: searchTerm
+      },{
+        woreda: searchTerm
+      },{
+        kebele: searchTerm
+      },{
+        house_no: searchTerm
+      },{
+        phone: searchTerm
+      },{
+        household_members_count: searchTerm
+      },{
+        status: searchTerm
+      }]
+    }
+
+    if(validator.isMongoId(searchTerm)) {
+      query.$or.push({
+        branch: searchTerm
+      })
+    }
+   
+    let clients = yield ClientDal.getCollectionByPagination(query, opts);
+
+    this.body = clients;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'SEARCH_CLIENTS_ERROR',
+      message: ex.message
+    }));
+  }
+};
