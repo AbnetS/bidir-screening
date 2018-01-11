@@ -544,17 +544,7 @@ exports.search = function* searchScreenings(next) {
       throw new Error('Please Provide A Search Term');
     }
 
-    searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
-
-    query = {
-      $or: [{
-        title: searchTerm
-      },{
-        description: searchTerm
-      },{
-        status: searchTerm
-      }]
-    }
+    query.$or = [];
 
     if(validator.isMongoId(searchTerm)) {
       query.$or.push({
@@ -569,6 +559,17 @@ exports.search = function* searchScreenings(next) {
         client: searchTerm
       })
     }
+
+    searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
+
+    query.$or.push({
+        title: searchTerm
+      },{
+        description: searchTerm
+      },{
+        status: searchTerm
+    })
+
    
     let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
 

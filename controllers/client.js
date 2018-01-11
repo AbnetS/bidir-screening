@@ -502,10 +502,18 @@ exports.search = function* searchClients(next) {
       throw new Error('Please Provide A Search Term');
     }
 
+    query.$or = [];
+
+    if(validator.isMongoId(searchTerm)) {
+      query.$or.push({
+        branch: searchTerm
+      })
+    }
+
     searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
 
-    query = {
-      $or: [{
+
+    query.$or.push({
         gender: searchTerm
       },{
         first_name: searchTerm
@@ -525,14 +533,8 @@ exports.search = function* searchClients(next) {
         household_members_count: searchTerm
       },{
         status: searchTerm
-      }]
-    }
+      });
 
-    if(validator.isMongoId(searchTerm)) {
-      query.$or.push({
-        branch: searchTerm
-      })
-    }
    
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
