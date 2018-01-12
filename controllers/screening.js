@@ -387,7 +387,6 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
-  let query = {};
 
   if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
     return this.throw(new CustomError({
@@ -413,41 +412,40 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   };
 
   let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
+
 
   try {
     
     let user = this.state._user;
     let account = yield Account.findOne({ user: user._id }).exec();
+    let query = {};
 
-    if(this.query.source == 'app') {
-      if(user.role == 'super' || user.realm == 'super' || !account) {
-        throw new Error('Please View Using Web!!');
+    // Super Admin
+    if (!account) {
+        query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
       }
 
-      if(!account.multi_branch) {
+    // Can VIEW
+    } else if(canView) {
         query = {
           created_by: user._id
         };
-      } else if(canViewAll) {
-        if(account.access_branches.length) {
-          query.access_branches = { $in: account.access_branches };
 
-        } else if(account.default_branch) {
-          query.default_branch = account.default_branch;
-
-        }
-      }
-
-    } else if(this.query.source == 'web') {
-      if(!account.multi_branch) {
-        if(account.access_branches.length) {
-          query.access_branches = { $in: account.access_branches };
-
-        } else if(account.default_branch) {
-          query.default_branch = account.default_branch;
-
-        }
-      }
+    // DEFAULT
+    } else {
+      query = {
+          created_by: user._id
+        };
     }
 
     let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
@@ -536,8 +534,41 @@ exports.search = function* searchScreenings(next) {
     sort: sort
   };
 
+  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
 
   try {
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+    let query = {};
+
+    // Super Admin
+    if (!account) {
+        query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+      }
+
+    // Can VIEW
+    } else if(canView) {
+        query = {
+          created_by: user._id
+        };
+
+    // DEFAULT
+    } else {
+      query = {
+          created_by: user._id
+        };
+    }
+
 
     let searchTerm = this.query.search;
     if(!searchTerm) {
@@ -547,14 +578,6 @@ exports.search = function* searchScreenings(next) {
     query.$or = [];
 
     if(validator.isMongoId(searchTerm)) {
-      query.$or.push({
-        branch: searchTerm
-      });
-
-      query.$or.push({
-        created_by: searchTerm
-      });
-
       query.$or.push({
         client: searchTerm
       })

@@ -482,7 +482,6 @@ exports.search = function* searchClients(next) {
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
-  let query = {};
 
   let sortType = this.query.sort_by;
   let sort = {};
@@ -494,12 +493,45 @@ exports.search = function* searchClients(next) {
     sort: sort
   };
 
+  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
 
   try {
+
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+    let query = {};
 
     let searchTerm = this.query.search;
     if(!searchTerm) {
       throw new Error('Please Provide A Search Term');
+    }
+
+    // Super Admin
+    if (!account) {
+        query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+      }
+
+    // Can VIEW
+    } else if(canView) {
+        query = {
+          created_by: user._id
+        };
+
+    // DEFAULT
+    } else {
+      query = {
+          created_by: user._id
+        };
     }
 
     query.$or = [];
