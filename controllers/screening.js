@@ -424,7 +424,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
     let query = {};
 
     // Super Admin
-    if (!account) {
+    if (!account || (account.multi_branches && canViewAll)) {
         query = {};
 
     // Can VIEW ALL
@@ -544,7 +544,7 @@ exports.search = function* searchScreenings(next) {
     let query = {};
 
     // Super Admin
-    if (!account) {
+    if (!account || (account.multi_branches && canViewAll)) {
         query = {};
 
     // Can VIEW ALL

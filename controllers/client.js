@@ -361,7 +361,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
     let account = yield Account.findOne({ user: user._id }).exec();
 
     // Super Admin
-    if (!account) {
+    if (!account || (account.multi_branches && canViewAll)) {
         query = {};
 
     // Can VIEW ALL
@@ -508,7 +508,7 @@ exports.search = function* searchClients(next) {
     }
 
     // Super Admin
-    if (!account) {
+    if (!account || (account.multi_branches && canViewAll)) {
         query = {};
 
     // Can VIEW ALL
