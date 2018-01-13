@@ -574,23 +574,28 @@ exports.search = function* searchScreenings(next) {
     if(!searchTerm) {
       throw new Error('Please Provide A Search Term');
     }
-
+    
     query.$or = [];
 
-    if(validator.isMongoId(searchTerm)) {
-      query.$or.push({
-        client: searchTerm
-      })
+    let terms = searchTerm.split(/\s+/);
+    let groupTerms = { $in: [] };
+
+    for(let term of terms) {
+      if(validator.isMongoId(term)) {
+        throw new Error('IDs are not supported for Search');
+      }
+
+      term = new RegExp(`${term}`, 'i')
+
+      groupTerms.$in.push(term);
     }
 
-    searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
-
     query.$or.push({
-        title: searchTerm
+        title: groupTerms
       },{
-        description: searchTerm
+        description: groupTerms
       },{
-        status: searchTerm
+        status: groupTerms
     })
 
    

@@ -536,35 +536,43 @@ exports.search = function* searchClients(next) {
 
     query.$or = [];
 
-    if(validator.isMongoId(searchTerm)) {
-      query.$or.push({
-        branch: searchTerm
-      })
+    let terms = searchTerm.split(/\s+/);
+    let groupTerms = { $in: [] };
+
+    for(let term of terms) {
+      if(validator.isMongoId(term)) {
+        throw new Error('IDs are not supported for Search');
+      }
+
+      term = new RegExp(`${term}`, 'i')
+
+      groupTerms.$in.push(term);
     }
 
-    searchTerm = { $regex: new RegExp(`${searchTerm}`), $options: 'i' };
-
-
     query.$or.push({
-        gender: searchTerm
+        gender: groupTerms
       },{
-        first_name: searchTerm
+        first_name: groupTerms
       },{
-        last_name: searchTerm
+        last_name: groupTerms
       },{
-        national_id_no: searchTerm
+        national_id_no: groupTerms
       },{
-        woreda: searchTerm
+        woreda: groupTerms
       },{
-        kebele: searchTerm
+        kebele: groupTerms
       },{
-        house_no: searchTerm
+        house_no: groupTerms
       },{
-        phone: searchTerm
+        phone: groupTerms
       },{
-        household_members_count: searchTerm
+        household_members_count: groupTerms
       },{
-        status: searchTerm
+        status: groupTerms
+      },{
+        civil_status: groupTerms
+      },{
+        email: groupTerms
       });
 
    
