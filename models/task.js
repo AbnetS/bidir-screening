@@ -18,6 +18,7 @@ var TaskSchema = new Schema({
     status:      { type:String, enums:['pending', 'approved', 'declined'], default: 'pending'},
     created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     comment:        { type: String, default: '' },
+    branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -59,7 +60,8 @@ TaskSchema.statics.attributes = {
   last_modified: 1,
   user: 1,
   created_by: 1,
-  comment:1 
+  comment:1,
+  branch: 1
 };
 
 

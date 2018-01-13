@@ -307,7 +307,8 @@ exports.update = function* updateScreening(next) {
           entity_ref: screening._id,
           entity_type: 'screening',
           created_by: this.state._user._id,
-          user: task.created_by
+          user: task.created_by,
+          branch: screening.branch
         });
         yield NotificationDal.create({
           for: this.state._user._id,
@@ -349,7 +350,8 @@ exports.update = function* updateScreening(next) {
         task_type: 'approve',
         entity_ref: screening._id,
         entity_type: 'screening',
-        created_by: this.state._user._id
+        created_by: this.state._user._id,
+        branch: screening.branch
       })
     }
 
@@ -522,7 +524,6 @@ exports.search = function* searchScreenings(next) {
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
-  let query = {};
 
   let sortType = this.query.sort_by;
   let sort = {};
