@@ -245,7 +245,7 @@ exports.update = function* updateScreening(next) {
 
   this.checkBody('status')
       .notEmpty('Status should not be empty')
-      .isIn(['inprogress','submitted', 'approved','declined_final', 'declined_under_review'], 'Correct Status is either inprogress, approved, submitted, declined_final or declined_under_review');
+      .isIn(['screening_inprogress','submitted', 'approved','declined_final', 'declined_under_review'], 'Correct Status is either screening_inprogress, approved, submitted, declined_final or declined_under_review');
 
   if(this.errors) {
     return this.throw(new CustomError({
