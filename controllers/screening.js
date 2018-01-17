@@ -188,9 +188,7 @@ exports.updateStatus = function* updateScreening(next) {
       let client = yield ClientDal.update({ _id: screening.client }, { status: 'inprogress' });
     }
 
-    if(screening.status == body.status) {
-      throw new Error(`Screening Is Already ${body.status}`);
-    }
+    
 
     screening = yield ScreeningDal.update(query, body);
 
@@ -269,10 +267,6 @@ exports.update = function* updateScreening(next) {
     let screening = yield ScreeningDal.get(query);
     let client    = yield ClientDal.get({ _id: screening.client });
 
-    if(screening.status === 'new') {
-      client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
-    }
-
     if(body.status === 'approved') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'eligible' });
       let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
@@ -318,6 +312,8 @@ exports.update = function* updateScreening(next) {
       }
       
 
+    } else if(body.status === 'submitted') {
+      client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
     }
     
     let mandatory = false;
