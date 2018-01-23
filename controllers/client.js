@@ -76,7 +76,7 @@ exports.create = function* createClient(next) {
 
   if(!body.first_name) errors.push('Client First Name is Empty');
   if(!body.last_name) errors.push('Client Last Name is Empty');
-  if(!body.grandfather_name) errors.push('Client Grandfather name is Empty');
+  //if(!body.grandfather_name) errors.push('Client Grandfather name is Empty');
   if(!body.gender) errors.push('Client Gender is Empty');
   if(!body.national_id_no) errors.push('Client National Id No is Empty');
   if(!body.branch || !validator.isMongoId(body.branch)) errors.push('Client Related Branch is Empty');
