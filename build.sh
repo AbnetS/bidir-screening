@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 DOCKER_PATH=$(which docker)
-SERVICE_NAME=dev-screening-api
+DEPLOYMENT_ENV=`hostname | awk -F - '{print $2}'`
+SERVICE_NAME=$DEPLOYMENT_ENV-screening-api
 IMAGE_TAG=bidir/$SERVICE_NAME
 EXPOSE_PORT=8040
 CONT_PORT=8040
-HOST_IP=10.142.0.5
-MONGODB_URL=mongodb://10.142.0.5:27017/bidir
+HOST_IP=`ifconfig ens4 | awk '/inet addr/{print substr($2,6)}'`
+MONGODB_URL=mongodb://$HOST_IP:27017/bidir
 # Stop running container
 $DOCKER_PATH stop $SERVICE_NAME
 # Remove container
