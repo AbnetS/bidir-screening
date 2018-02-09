@@ -8,15 +8,22 @@ var mongoose  = require('mongoose');
 var moment    = require('moment');
 var paginator = require('mongoose-paginate');
 
-var enums     = require ('../lib/enums');
+const FORM     = require ('../lib/enums').FORM
 
 var Schema = mongoose.Schema;
 
 var ScreeningSchema = new Schema({       
-    type:           { type: String, default: 'Screening' },
-    description:    { type: String, default: '' },
+    type:           { type: String, enum: FORM.TYPES },
     title:          { type: String, default: '' },
-    answers:        [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    subtitle:       { type: String, default: '' },
+    purpose:        { type: String, default: '' },
+    created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
+    layout:         { type: String, default: FORM.LAYOUTS[0], enums: FORM.LAYOUTS },
+    has_sections:   { type: Boolean, default: false },
+    sections:       [{ type: Schema.Types.ObjectId, ref: 'Section' }],
+    signatures:     [{ type: String }],
+    disclaimer:     { type: String, default: '' },
+    questions:      [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
     created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     client:         { type: Schema.Types.ObjectId, ref: 'Client' },
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
@@ -53,11 +60,17 @@ ScreeningSchema.pre('save', function preSaveMiddleware(next) {
  */
 ScreeningSchema.statics.attributes = {
   type: 1,
-  name: 1,
   title: 1,
-  process: 1,
-  description: 1,
-  answers: 1,
+  questions: 1,
+  created_by: 1,
+  has_sections: 1,
+  sections: 1,
+  subtitle: 1,
+  purpose: 1,
+  layout: 1,
+  disclaimer: 1,
+  signatures: 1,
+  questions: 1,
   created_by: 1,
   client: 1,
   status: 1,

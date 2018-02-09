@@ -14,7 +14,7 @@ const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Answer.attributes;
 var population = [{
-  path: 'sub_answers',
+  path: 'sub_questions',
   select: Answer.attributes
 }];
 

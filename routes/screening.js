@@ -11,76 +11,6 @@ const authController     = require('../controllers/auth');
 const acl               = authController.accessControl;
 var router  = Router();
 
-/**
- * @api {post} /screenings/create Create new Screening
- * @apiVersion 1.0.0
- * @apiName CreateScreening
- * @apiGroup Screening
- *
- * @apiDescription Create new Screening. 
- *
- * @apiParam {String} type Screening Type  Screening 
- * @apiParam {String} description Screening Description
- * @apiParam {String} title Screening Title
- * @apiParam {String} process Screening Process
- * @apiParam {Array} answers Screening Answers
- * @apiParam {String} created_by User registering this
- * @apiParam {String} client Client Reference being screened
- * @apiParam {String} [status] Status ie incomplete, completed, cancelled, approved or submitted
- *
- * @apiParamExample Request Example:
- *  {
- *    type: "Screening",
- *    description: "This is a Description",
- *    title: "Screening Title",
- *    process: "",
- *    answers : [{
- *      title: "Farmer is ...",
- *      remark: "remark",
- *      type: "Yes/No",
- *      sub_answers: [],
- *      ...
- *    }],
- *    created_by : "556e1174a8952c9521286a60",
- *    client : "556e1174a8952c9521286a60".
- *    status: "incomplete"
- *  }
- *
- * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
- * @apiSuccess {String} created_by User registering this
- * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
- *
- * @apiSuccessExample Response Example:
- *  {
- *    _id : "556e1174a8952c9521286a60",
- *    type: "Screening",
- *    description: "This is a Description",
- *    title: "Screening Title",
- *    process: "",
- *    answers: ]{
- *		 _id : "556e1174a8952c9521286a60",
- *       ....
- *    }],
- *    created_by: {
- *		 _id : "556e1174a8952c9521286a60",
- *       ....
- *    },
- *    client: {
- *		 _id : "556e1174a8952c9521286a60",
- *       ....
- *    },
- *    status: "incomplete"
- *  }
- *
- */
-router.post('/create', acl(['*']), screeningController.create);
-
 
 /**
  * @api {get} /screenings/paginate?page=<RESULTS_PAGE>&per_page=<RESULTS_PER_PAGE> Get screenings collection
@@ -93,14 +23,19 @@ router.post('/create', acl(['*']), screeningController.create);
  * and `per_page=<RESULTS_PER_PAGE>`. __QUERY SOURCE MUST BE SPECIFIED LIKE ?source=<web|app>__
  *
  * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
  * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled , approved or submitted
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -141,14 +76,19 @@ router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
  * and `per_page=<RESULTS_PER_PAGE>`. __QUERY SOURCE MUST BE SPECIFIED LIKE ?source=<web|app>__
  *
  * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
  * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
- * @apiSuccess {String} status Status ie incomplete, completed, cancelled , approved or submitted
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
  *
  * @apiSuccessExample Response Example:
  *  {
@@ -188,11 +128,16 @@ router.get('/search', acl(['*']), screeningController.search);
  * @apiDescription Get a user screening with the given id
  *
  * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
  * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
@@ -235,11 +180,16 @@ router.get('/:id', acl(['*']), screeningController.fetchOne);
  * }
  *
  * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
  * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
@@ -273,11 +223,16 @@ router.put('/:id', acl(['*']), screeningController.update);
  * @apiDescription Delete a Screening with the given id
  *
  * @apiSuccess {String} _id screening id
- * @apiSuccess {String} type Screening Type ie Screening or Screening Application
- * @apiSuccess {String} description Screening Description
- * @apiSuccess {String} title Screening Title
- * @apiSuccess {String} process Screening Process
- * @apiSuccess {Array} answers Screening Answers
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
  * @apiSuccess {String} created_by User registering this
  * @apiSuccess {String} client Client Reference being screened
  * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted

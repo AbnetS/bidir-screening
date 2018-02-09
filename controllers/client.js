@@ -18,6 +18,7 @@ const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const googleBuckets      = require('../lib/google-buckets');
 const checkPermissions   = require('../lib/permissions');
+const FORM                = require ('../lib/enums').FORM;
 
 const Account            = require('../models/account');
 
@@ -28,6 +29,8 @@ const ScreeningDal       = require('../dal/screening');
 const FormDal            = require('../dal/form');
 const AccountDal         = require('../dal/account');
 const AnswerDal          = require('../dal/answer');
+const QuestionDal        = require('../dal/question');
+const SectionDal         = require('../dal/section');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
@@ -95,7 +98,7 @@ exports.create = function* createClient(next) {
   }
 
   try {
-    let screeningForm = yield FormDal.get({ type: 'Screening' });
+    let screeningForm = yield FormDal.get({ type: 'SCREENING' });
     if(!screeningForm || !screeningForm._id) {
       throw new Error('Screening Form Is Needed To Be Created In Order To Continue!')
     }
@@ -144,10 +147,11 @@ exports.create = function* createClient(next) {
 
     // Create New Screening
     let answers = [];
+    let sections = [];
     let screeningBody = {};
     screeningForm = screeningForm.toJSON();
 
-    // Create Answer Types
+   // Create Answer Types
     for(let question of screeningForm.questions) {
       let subs = [];
       delete question._id;
@@ -160,6 +164,7 @@ exports.create = function* createClient(next) {
           subs.push(ans);
         }
       }
+
       question.sub_questions = subs;
 
       let answer = yield AnswerDal.create(question);
@@ -167,12 +172,43 @@ exports.create = function* createClient(next) {
       answers.push(answer);
     }
 
-    screeningBody.answers = answers;
+    // Create Section Types
+    for(let section of screeningForm.sections) {
+      let _answers = [];
+      delete section._id;
+
+      if(section.questions.length) {
+        for(let sub of section.questions) {
+          sub = yield QuestionDal.get({_id: sub });
+          sub = sub.toJSON();
+
+          delete sub._id;
+          let ans = yield AnswerDal.create(sub);
+
+          _answers.push(ans);
+        }
+      }
+
+      section.questions = _answers;
+
+      let _section = yield SectionDal.create(section);
+
+      sections.push(_section);
+    }
+
+    screeningBody.questions = answers.slice();
+    screeningBody.sections = sections.slice();
     screeningBody.client = client._id;
-    screeningBody.title = 'Screening Form';
-    screeningBody.description = `Screening Application For ${client.first_name} ${client.last_name}`;
+    screeningBody.title = 'Client Screening Form';
+    screeningBody.subtitle = screeningForm.subtitle;
+    screeningBody.purpose = `Screening Application For ${client.first_name} ${client.last_name}`;
+    screeningBody.layout = screeningForm.layout;
+    screeningBody.has_sections = screeningForm.has_sections;
+    screeningBody.disclaimer = screeningForm.disclaimer;
+    screeningBody.signatures = screeningForm.signatures.slice();
     screeningBody.created_by = this.state._user._id;
     screeningBody.branch = client.branch._id;
+
 
     // Create Screening Type
     let screening = yield ScreeningDal.create(screeningBody);

@@ -1,7 +1,8 @@
-// Form Model Definiton.
+// Loan Model Definiton.
 
 /**
  * Load Module Dependencies.
+ * status: incomplete, completed, declined, approved, new
  */
 var mongoose  = require('mongoose');
 var moment    = require('moment');
@@ -11,24 +12,28 @@ const FORM     = require ('../lib/enums').FORM
 
 var Schema = mongoose.Schema;
 
-var FormSchema = new Schema({       
+var LoanSchema = new Schema({       
     type:           { type: String, enum: FORM.TYPES },
     title:          { type: String, default: '' },
     subtitle:       { type: String, default: '' },
     purpose:        { type: String, default: '' },
-    questions:      [{ type: Schema.Types.ObjectId, ref: 'Question'}],
     created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
     layout:         { type: String, default: FORM.LAYOUTS[0], enums: FORM.LAYOUTS },
     has_sections:   { type: Boolean, default: false },
     sections:       [{ type: Schema.Types.ObjectId, ref: 'Section' }],
     signatures:     [{ type: String }],
     disclaimer:     { type: String, default: '' },
+    questions:      [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
+    client:         { type: Schema.Types.ObjectId, ref: 'Client' },
+    branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
+    status:         { type: String, default: 'new' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
 
 // add mongoose-troop middleware to support pagination
-FormSchema.plugin(paginator);
+LoanSchema.plugin(paginator);
 
 /**
  * Pre save middleware.
@@ -37,7 +42,7 @@ FormSchema.plugin(paginator);
  *          attributes prior to save.
  *        - Hash tokens password.
  */
-FormSchema.pre('save', function preSaveMiddleware(next) {
+LoanSchema.pre('save', function preSaveMiddleware(next) {
   var instance = this;
 
   // set date modifications
@@ -51,9 +56,9 @@ FormSchema.pre('save', function preSaveMiddleware(next) {
 });
 
 /**
- * Filter Form Attributes to expose
+ * Filter Loan Attributes to expose
  */
-FormSchema.statics.attributes = {
+LoanSchema.statics.attributes = {
   type: 1,
   title: 1,
   questions: 1,
@@ -65,11 +70,16 @@ FormSchema.statics.attributes = {
   layout: 1,
   disclaimer: 1,
   signatures: 1,
+  questions: 1,
+  created_by: 1,
+  client: 1,
+  status: 1,
+  branch: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1
 };
 
 
-// Expose Form model
-module.exports = mongoose.model('Form', FormSchema);
+// Expose Loan model
+module.exports = mongoose.model('Loan', LoanSchema);
