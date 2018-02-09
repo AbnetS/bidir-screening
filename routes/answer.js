@@ -40,19 +40,21 @@ var router  = Router();
  *    "total_pages": 1,
  *    "total_docs_count": 0,
  *    "docs": [{
- *    	_id : "556e1174a8952c9521286a60",
- *    	title: "Answer Title",
- *    	remark: "This is a remark",
- *    	type: "Yes/No",
- *    	sub_answers: [{
- *		 	_id : "556e1174a8952c9521286a60",
- *       	....
- *    	}],
- *    	required: true
- *    	options: ['Yes', 'No'],
- *    	single_choice: ['Yes'],
- *    	multiple_choice: [],
- *    value: ''
+ *      _id : "556e1174a8952c9521286a60",
+ *      title: "Answer Title",
+ *      remark: "This is a remark",
+ *      type: "YES_NO",
+ *      sub_questions: [{
+ *      _id : "556e1174a8952c9521286a60",
+ *        ....
+ *      }],
+ *      required: true,
+ *      validation_factor: 'NONE',
+ *      options: ['Yes', 'No'],
+ *      values: [],
+ *      measurement_unit: '',
+ *      show: true,
+ *      prerequisities: []
  *    }]
  *  }
  */
@@ -81,19 +83,21 @@ router.get('/paginate', acl(['*']), answerController.fetchAllByPagination);
  *
  * @apiSuccessExample Response Example:
  *  {
- *    _id : "556e1174a8952c9521286a60",
- *    title: "Answer Title",
- *    remark: "This is a remark",
- *    type: "Yes/No",
- *    sub_answers: [{
- *		 _id : "556e1174a8952c9521286a60",
- *       ....
- *    }],
- *    	required: true
- *    	options: ['Yes', 'No'],
- *    	single_choice: ['Yes'],
- *    	multiple_choice: [],
- *      value: '' 
+ *      _id : "556e1174a8952c9521286a60",
+ *      title: "Answer Title",
+ *      remark: "This is a remark",
+ *      type: "YES_NO",
+ *      sub_questions: [{
+ *      _id : "556e1174a8952c9521286a60",
+ *        ....
+ *      }],
+ *      required: true,
+ *      validation_factor: 'NONE',
+ *      options: ['Yes', 'No'],
+ *      values: [],
+ *      measurement_unit: '',
+ *      show: true,
+ *      prerequisities: []
  *  }
  *
  */
@@ -130,19 +134,21 @@ router.get('/:id', acl(['*']), answerController.fetchOne);
  *
  * @apiSuccessExample Response Example:
  *  {
- *    _id : "556e1174a8952c9521286a60",
- *    title: "Answer Title",
- *    remark: "This is a remark too",
- *    type: "Yes/No",
- *    sub_answers: [{
- *		 _id : "556e1174a8952c9521286a60",
- *       ....
- *    }],
- *    	required: true
- *    	options: ['Yes', 'No'],
- *    	single_choice: ['Yes'],
- *    	multiple_choice: [],
- *      value: ''
+ *      _id : "556e1174a8952c9521286a60",
+ *      title: "Answer Title",
+ *      remark: "This is a remark",
+ *      type: "YES_NO",
+ *      sub_questions: [{
+ *      _id : "556e1174a8952c9521286a60",
+ *        ....
+ *      }],
+ *      required: true,
+ *      validation_factor: 'NONE',
+ *      options: ['Yes', 'No'],
+ *      values: [],
+ *      measurement_unit: '',
+ *      show: true,
+ *      prerequisities: []
  *  }
  */
 router.put('/:id', acl(['*']), answerController.update);
