@@ -31,6 +31,7 @@ const AccountDal         = require('../dal/account');
 const AnswerDal          = require('../dal/answer');
 const QuestionDal        = require('../dal/question');
 const SectionDal         = require('../dal/section');
+const ScreeningSectionDal = require('../dal/screeningSection');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
@@ -153,21 +154,22 @@ exports.create = function* createClient(next) {
 
    // Create Answer Types
     for(let question of screeningForm.questions) {
+    
       let subs = [];
       delete question._id;
 
       if(question.sub_questions.length) {
         for(let sub of question.sub_questions) {
           delete sub._id;
-          let ans = yield AnswerDal.create(sub);
+          let ans = yield createAnswer(sub);
 
           subs.push(ans);
         }
+
+        question.sub_answers = subs;
       }
 
-      question.sub_questions = subs;
-
-      let answer = yield AnswerDal.create(question);
+      let answer = yield createAnswer(question);
 
       answers.push(answer);
     }
@@ -183,20 +185,33 @@ exports.create = function* createClient(next) {
           sub = sub.toJSON();
 
           delete sub._id;
-          let ans = yield AnswerDal.create(sub);
+
+          if(sub.sub_questions.length) {
+            let subs = [];
+            for(let q of sub.sub_questions) {
+              let _q = yield createAnswer(q);
+
+              subs.push(_q);
+            }
+
+            sub.sub_answers = subs;
+          }
+
+          let ans = yield createAnswer(sub);
 
           _answers.push(ans);
         }
+
       }
 
-      section.questions = _answers;
+      section.answers = _answers;
 
-      let _section = yield SectionDal.create(section);
+      let _section = yield ScreeningSectionDal.create(section);
 
       sections.push(_section);
     }
 
-    screeningBody.questions = answers.slice();
+    screeningBody.answers = answers.slice();
     screeningBody.sections = sections.slice();
     screeningBody.client = client._id;
     screeningBody.title = 'Client Screening Form';
@@ -623,3 +638,72 @@ exports.search = function* searchClients(next) {
     }));
   }
 };
+
+/**
+ * Get a client screening.
+ *
+ * @desc Fetch a screening with the given id from the database.
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.getClientScreening = function* getClientScreening(next) {
+  debug(`fetch client screening: ${this.params.id}`);
+
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_SCREENING_VIEW_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
+  let query = {
+    client: this.params.id
+  };
+
+  try {
+    let screening = yield ScreeningDal.get(query);
+
+    yield LogDal.track({
+      event: 'view_client_screening',
+      screening: this.state._user._id ,
+      message: `View Client screening - ${screening.title}`
+    });
+
+    this.body = screening;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_SCREENING_VIEW_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
+
+// Utilities
+function createAnswer(question) {
+  return co(function* () {
+
+    // TODO on not created question
+    if(question.prerequisites.length) {
+      let preqs = [];
+      for(let preq of question.prerequisites) {
+        let ques = yield QuestionDal.get({ _id: preq.question });
+        let ans  = yield AnswerDal.get({ question_text: ques.question_text });
+
+        preqs.push({
+          answer: '',
+          question: ans._id
+        })
+      }
+
+      question.prerequisites = preqs;
+    }
+
+    let answer = yield AnswerDal.create(question);
+
+    return answer;
+
+  })
+}

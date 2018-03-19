@@ -12,20 +12,43 @@ const co      = require('co');
 const Screening     = require('../models/screening');
 const Answer        = require('../models/answer');
 const Client        = require('../models/client');
-const Section       = require('../models/section');
+const ScreeningSection       = require('../models/screeningSection');
 const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Screening.attributes;
 var population = [{
-  path: 'questions',
+  path: 'answers',
   select: Answer.attributes,
+  options: {
+    sort: { number: '1' }
+  },
   populate: {
-    path: 'sub_questions',
-    select: Answer.attributes
+    path: 'sub_answers',
+    select: Answer.attributes,
+    options: {
+      sort: { number: '1' }
+    }
   }
 },{
   path: 'sections',
-  select: Section.attributes,
+  select: ScreeningSection.attributes,
+  options: {
+    sort: { number: '1' }
+  },
+  populate: {
+    path: 'answers',
+    select: Answer.attributes,
+    options: {
+      sort: { number: '1' }
+    },
+    populate: {
+      path: 'sub_answers',
+      select: Answer.attributes,
+      options: {
+        sort: { number: '1' }
+      }
+    }
+  }
 },{
   path: 'client',
   select: Client.attributes

@@ -13,13 +13,14 @@ var Schema = mongoose.Schema;
 
 var AnswerSchema = new Schema({       
     question_text:      { type: String, required: true },
+    number:             { type: Number, default: 1 },
     remark:             { type: String, default: '' },
     type:               { type: String, enums: QUESTION.TYPES, default: QUESTION.TYPES[0] },
     required:           { type: Boolean, default: false },
     validation_factor:  { type: String, default: QUESTION.VALIDATION[0], enums: QUESTION.VALIDATION },
     measurement_unit:   { type: String, default: '' },
     options:            [{ type: String }],
-    sub_questions:      [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    sub_answers:      [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
     values:             [{ type: String, default: '' }],
     show:               { type: Boolean, default: true },
     prerequisites:      [{
@@ -59,12 +60,13 @@ AnswerSchema.pre('save', function preSaveMiddleware(next) {
 AnswerSchema.statics.attributes = {
   question_text:      1,
   remark:             1,
+  number:             1,
   type:               1,
   required:           1,
   validation_factor:  1,
   measurement_unit:   1,
   options:            1,
-  sub_questions:      1,
+  sub_answers:        1,
   values:             1,
   show:               1,
   prerequisites:      1,

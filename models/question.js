@@ -13,6 +13,7 @@ var Schema = mongoose.Schema;
 
 var QuestionSchema = new Schema({       
     question_text:      { type: String, required: true },
+    number:             { type: Number, default: 1 },
     remark:             { type: String, default: '' },
     type:               { type: String, enums: QUESTION.TYPES, default: QUESTION.TYPES[0] },
     required:           { type: Boolean, default: false },
@@ -59,6 +60,7 @@ QuestionSchema.pre('save', function preSaveMiddleware(next) {
 QuestionSchema.statics.attributes = {
   question_text:      1,
   remark:             1,
+  number:             1,
   type:               1,
   required:           1,
   validation_factor:  1,

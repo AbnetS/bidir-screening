@@ -288,6 +288,51 @@ router.get('/search', acl(['*']), clientController.search);
 
 
 /**
+ * @api {get} /screenings/clients/:id/screenings Get Client Screening
+ * @apiVersion 1.0.0
+ * @apiName ClientScreening
+ * @apiGroup Screening
+ *
+ * @apiDescription Get client screening 
+ *
+ * @apiSuccess {String} _id screening id
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
+ * @apiSuccess {String} created_by User registering this
+ * @apiSuccess {String} client Client Reference being screened
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    _id : "556e1174a8952c9521286a60",
+ *    type: "Screening",
+ *    description: "This is a Description",
+ *    title: "Screening Title",
+ *    process: "",
+ *    answers: ]{
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    }],
+ *    created_by: {
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    status: "incomplete"
+ *  }
+ *
+ */
+router.get('/:id/screenings', acl(['*']), clientController.getClientScreening);
+
+
+/**
  * @api {get} /screening/clients/:id Get Client Client
  * @apiVersion 1.0.0
  * @apiName Get
