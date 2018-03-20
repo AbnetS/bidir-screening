@@ -10,40 +10,40 @@ const _       = require('lodash');
 const co      = require('co');
 
 const Screening     = require('../models/screening');
-const Answer        = require('../models/answer');
+const Question      = require('../models/question');
 const Client        = require('../models/client');
-const ScreeningSection       = require('../models/screeningSection');
+const Section       = require('../models/section');
 const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Screening.attributes;
 var population = [{
-  path: 'answers',
-  select: Answer.attributes,
+  path: 'questions',
+  select: Question.attributes,
   options: {
     sort: { number: '1' }
   },
   populate: {
-    path: 'sub_answers',
-    select: Answer.attributes,
+    path: 'sub_questions',
+    select: Question.attributes,
     options: {
       sort: { number: '1' }
     }
   }
 },{
   path: 'sections',
-  select: ScreeningSection.attributes,
+  select: Section.attributes,
   options: {
     sort: { number: '1' }
   },
   populate: {
-    path: 'answers',
-    select: Answer.attributes,
+    path: 'questions',
+    select: Question.attributes,
     options: {
       sort: { number: '1' }
     },
     populate: {
-      path: 'sub_answers',
-      select: Answer.attributes,
+      path: 'sub_questions',
+      select: Question.attributes,
       options: {
         sort: { number: '1' }
       }

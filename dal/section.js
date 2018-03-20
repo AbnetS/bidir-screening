@@ -10,13 +10,23 @@ const _       = require('lodash');
 const co      = require('co');
 
 const Section    = require('../models/section');
-const Answer    = require('../models/answer');
+const Question    = require('../models/question');
 const mongoUpdate   = require('../lib/mongo-update');
 
 var returnFields = Section.attributes;
 var population = [{
   path: 'questions',
-  select: Answer.attributes
+  select: Question.attributes,
+  options: {
+    sort: { number: '1' }
+  },
+  populate: {
+    path: 'sub_questions',
+    select: Question.attributes,
+    options: {
+      sort: { number: '1' }
+    }
+  }
 }];
 
 /**

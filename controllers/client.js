@@ -28,13 +28,10 @@ const LogDal             = require('../dal/log');
 const ScreeningDal       = require('../dal/screening');
 const FormDal            = require('../dal/form');
 const AccountDal         = require('../dal/account');
-const AnswerDal          = require('../dal/answer');
 const QuestionDal        = require('../dal/question');
 const SectionDal         = require('../dal/section');
-const ScreeningSectionDal = require('../dal/screeningSection');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
-
 
 /**
  * Create a client.
@@ -147,71 +144,42 @@ exports.create = function* createClient(next) {
     client = yield ClientDal.create(body);
 
     // Create New Screening
-    let answers = [];
+    let questions = [];
     let sections = [];
     let screeningBody = {};
     screeningForm = screeningForm.toJSON();
 
    // Create Answer Types
     for(let question of screeningForm.questions) {
-    
-      let subs = [];
-      delete question._id;
 
-      if(question.sub_questions.length) {
-        for(let sub of question.sub_questions) {
-          delete sub._id;
-          let ans = yield createAnswer(sub);
+      question = yield createQuestion(question);
 
-          subs.push(ans);
-        }
-
-        question.sub_answers = subs;
-      }
-
-      let answer = yield createAnswer(question);
-
-      answers.push(answer);
+      questions.push(question);
     }
 
     // Create Section Types
     for(let section of screeningForm.sections) {
-      let _answers = [];
+      let _questions = [];
       delete section._id;
 
       if(section.questions.length) {
-        for(let sub of section.questions) {
-          sub = yield QuestionDal.get({_id: sub });
-          sub = sub.toJSON();
+        for(let question of section.questions) {
 
-          delete sub._id;
+          question = yield createQuestion(question);
 
-          if(sub.sub_questions.length) {
-            let subs = [];
-            for(let q of sub.sub_questions) {
-              let _q = yield createAnswer(q);
-
-              subs.push(_q);
-            }
-
-            sub.sub_answers = subs;
-          }
-
-          let ans = yield createAnswer(sub);
-
-          _answers.push(ans);
+          _questions.push(question);
         }
 
       }
 
-      section.answers = _answers;
+      section.question = _questions;
 
-      let _section = yield ScreeningSectionDal.create(section);
+      let _section = yield SectionDal.create(section);
 
       sections.push(_section);
     }
 
-    screeningBody.answers = answers.slice();
+    screeningBody.questions = questions.slice();
     screeningBody.sections = sections.slice();
     screeningBody.client = client._id;
     screeningBody.title = 'Client Screening Form';
@@ -231,6 +199,7 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
+    console.log(ex);
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: ex.message
@@ -682,28 +651,49 @@ exports.getClientScreening = function* getClientScreening(next) {
 };
 
 // Utilities
-function createAnswer(question) {
+function createQuestion(question) {
   return co(function* () {
+    if(!question._id) {
+      question = yield QuestionDal.get({ _id: question });
+
+      question = question.toJSON();
+    }
+
+    let subs = [];
+    delete question._id;
+
+    if(question.sub_questions.length) {
+      for(let sub of question.sub_questions) {
+        delete sub._id;
+        let ans = yield createQuestion(sub);
+
+        subs.push(ans);
+      }
+
+      question.sub_questions = subs;
+    }
 
     // TODO on not created question
     if(question.prerequisites.length) {
       let preqs = [];
       for(let preq of question.prerequisites) {
         let ques = yield QuestionDal.get({ _id: preq.question });
-        let ans  = yield AnswerDal.get({ question_text: ques.question_text });
+        let q  = yield QuestionDal.get({ question_text: ques.question_text });
 
         preqs.push({
           answer: '',
-          question: ans._id
+          question: q._id
         })
       }
 
       question.prerequisites = preqs;
     }
 
-    let answer = yield AnswerDal.create(question);
+    console.log(question)
 
-    return answer;
+    question = yield QuestionDal.create(question);
+
+    return question;
 
   })
 }

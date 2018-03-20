@@ -6,7 +6,7 @@ const crypto  = require('crypto');
 const path    = require('path');
 const url     = require('url');
 
-const debug      = require('debug')('api:answer-controller');
+const debug      = require('debug')('api:question-controller');
 const moment     = require('moment');
 const jsonStream = require('streaming-json-stringify');
 const _          = require('lodash');
@@ -18,38 +18,38 @@ const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 
 const TokenDal           = require('../dal/token');
-const AnswerDal          = require('../dal/answer');
+const QuestionDal          = require('../dal/question');
 const LogDal             = require('../dal/log');
 
 
 /**
- * Get a single answer.
+ * Get a single question.
  *
- * @desc Fetch a answer with the given id from the database.
+ * @desc Fetch a question with the given id from the database.
  *
  * @param {Function} next Middleware dispatcher
  */
-exports.fetchOne = function* fetchOneAnswer(next) {
-  debug(`fetch answer: ${this.params.id}`);
+exports.fetchOne = function* fetchOneQuestion(next) {
+  debug(`fetch question: ${this.params.id}`);
 
   let query = {
     _id: this.params.id
   };
 
   try {
-    let answer = yield AnswerDal.get(query);
+    let question = yield QuestionDal.get(query);
 
     yield LogDal.track({
-      event: 'view_answer',
-      answer: this.state._user._id ,
-      message: `View answer - ${answer.title}`
+      event: 'view_question',
+      question: this.state._user._id ,
+      message: `View question - ${question.title}`
     });
 
-    this.body = answer;
+    this.body = question;
 
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'ANSWER_RETRIEVAL_ERROR',
+      type: 'QUESTION_RETRIEVAL_ERROR',
       message: ex.message
     }));
   }
@@ -57,14 +57,14 @@ exports.fetchOne = function* fetchOneAnswer(next) {
 };
 
 /**
- * Update Answer Status
+ * Update Question Status
  *
- * @desc Fetch a answer with the given ID and update their respective status.
+ * @desc Fetch a question with the given ID and update their respective status.
  *
  * @param {Function} next Middleware dispatcher
  */
-exports.updateStatus = function* updateAnswer(next) {
-  debug(`updating status answer: ${this.params.id}`);
+exports.updateStatus = function* updateQuestion(next) {
+  debug(`updating status question: ${this.params.id}`);
 
   this.checkBody('is_active')
       .notEmpty('is_active should not be empty');
@@ -75,20 +75,20 @@ exports.updateStatus = function* updateAnswer(next) {
   let body = this.request.body;
 
   try {
-    let answer = yield AnswerDal.update(query, body);
+    let question = yield QuestionDal.update(query, body);
 
     yield LogDal.track({
-      event: 'answer_status_update',
-      answer: this.state._user._id ,
-      message: `Update Status for ${answer.title}`,
+      event: 'question_status_update',
+      question: this.state._user._id ,
+      message: `Update Status for ${question.title}`,
       diff: body
     });
 
-    this.body = answer;
+    this.body = question;
 
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'ANSWER_STATUS_UPDATE_ERROR',
+      type: 'QUESTION_STATUS_UPDATE_ERROR',
       message: ex.message
     }));
 
@@ -97,15 +97,15 @@ exports.updateStatus = function* updateAnswer(next) {
 };
 
 /**
- * Update a single answer.
+ * Update a single question.
  *
- * @desc Fetch a answer with the given id from the database
+ * @desc Fetch a question with the given id from the database
  *       and update their data
  *
  * @param {Function} next Middleware dispatcher
  */
-exports.update = function* updateAnswer(next) {
-  debug(`updating answer: ${this.params.id}`);
+exports.update = function* updateQuestion(next) {
+  debug(`updating question: ${this.params.id}`);
 
   let query = {
     _id: this.params.id
@@ -113,20 +113,20 @@ exports.update = function* updateAnswer(next) {
   let body = this.request.body;
 
   try {
-    let answer = yield AnswerDal.update(query, body);
+    let question = yield QuestionDal.update(query, body);
 
     yield LogDal.track({
-      event: 'answer_update',
-      answer: this.state._user._id ,
-      message: `Update Info for ${answer.title}`,
+      event: 'question_update',
+      question: this.state._user._id ,
+      message: `Update Info for ${question.title}`,
       diff: body
     });
 
-    this.body = answer;
+    this.body = question;
 
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'UPDATE_ANSWER_ERROR',
+      type: 'UPDATE_QUESTION_ERROR',
       message: ex.message
     }));
 
@@ -135,14 +135,14 @@ exports.update = function* updateAnswer(next) {
 };
 
 /**
- * Get a collection of answers by Pagination
+ * Get a collection of questions by Pagination
  *
- * @desc Fetch a collection of answers
+ * @desc Fetch a collection of questions
  *
  * @param {Function} next Middleware dispatcher
  */
-exports.fetchAllByPagination = function* fetchAllAnswers(next) {
-  debug('get a collection of answers by pagination');
+exports.fetchAllByPagination = function* fetchAllQuestions(next) {
+  debug('get a collection of questions by pagination');
 
   // retrieve pagination query params
   let page   = this.query.page || 1;
@@ -160,12 +160,12 @@ exports.fetchAllByPagination = function* fetchAllAnswers(next) {
   };
 
   try {
-    let answers = yield AnswerDal.getCollectionByPagination(query, opts);
+    let questions = yield QuestionDal.getCollectionByPagination(query, opts);
 
-    this.body = answers;
+    this.body = questions;
   } catch(ex) {
     return this.throw(new CustomError({
-      type: 'FETCH_PAGINATED_ANSWERS_COLLECTION_ERROR',
+      type: 'FETCH_PAGINATED_QUESTIONS_COLLECTION_ERROR',
       message: ex.message
     }));
   }

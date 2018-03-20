@@ -23,7 +23,7 @@ const Account            = require('../models/account');
 
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
-const AnswerDal          = require('../dal/answer');
+const QuestionDal          = require('../dal/question');
 const LogDal             = require('../dal/log');
 const NotificationDal    = require('../dal/notification');
 const ClientDal          = require('../dal/client');
@@ -66,26 +66,26 @@ exports.create = function* createScreening(next) {
       throw new Error('Screening Form for the client already exists!!');
     }
 
-    let answers = [];
+    let questions = [];
 
-    // Create Answer Types
-    for(let answer of body.answers) {
+    // Create Question Types
+    for(let question of body.questions) {
       let subs = [];
 
-      if(answer.sub_answers) {
-        for(let sub of answer.sub_answers) {
-          let ans = yield AnswerDal.create(sub);
+      if(question.sub_questions) {
+        for(let sub of question.sub_questions) {
+          let ans = yield QuestionDal.create(sub);
 
           subs.push(ans);
         }
       }
-      answer.sub_answers = subs;
-      answer = yield AnswerDal.create(answer);
+      question.sub_questions = subs;
+      question = yield QuestionDal.create(question);
 
-      answers.push(answer);
+      questions.push(question);
     }
 
-    body.answers = answers;
+    body.questions = questions;
     body.client = client._id;
     body.title = 'Screening Form';
     body.description = `Screening Application For ${client.first_name} ${client.last_name}`;
@@ -320,23 +320,23 @@ exports.update = function* updateScreening(next) {
     
     let mandatory = false;
 
-    if(body.answers) {
-      let answers = [];
+    if(body.questions) {
+      let questions = [];
 
-      for(let answer of body.answers) {
-        let answerID = answer._id;
+      for(let question of body.questions) {
+        let questionID = question._id;
 
-        delete answer._id;
-        delete answer._v;
-        delete answer.date_created;
-        delete answer.last_modified;
+        delete question._id;
+        delete question._v;
+        delete question.date_created;
+        delete question.last_modified;
 
-        let result = yield AnswerDal.update({ _id: answerID }, answer);
+        let result = yield QuestionDal.update({ _id: questionID }, question);
 
-        answers.push(result);
+        questions.push(result);
       }
 
-      body.answers = answers;
+      body.questions = questions;
     }
 
     screening = yield ScreeningDal.update(query, body);
@@ -482,11 +482,11 @@ exports.remove = function* removeScreening(next) {
       throw new Error('Screening Does Not Exist!');
     }
 
-    for(let answer of screening.answers) {
-      answer = yield AnswerDal.delete({ _id: answer._id });
-      if(answer.sub_answers.length) {
-        for(let _answer of answer.sub_answers) {
-          yield AnswerDal.delete({ _id: _answer._id });
+    for(let question of screening.questions) {
+      question = yield QuestionDal.delete({ _id: question._id });
+      if(question.sub_questions.length) {
+        for(let _question of question.sub_questions) {
+          yield QuestionDal.delete({ _id: _question._id });
         }
       }
     }

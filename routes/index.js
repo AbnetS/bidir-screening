@@ -8,7 +8,7 @@ const debug  = require('debug')('api:app-router');
 
 const rootRouter        = require('./root');
 const clientRouter      = require('./client');
-const answerRouter      = require('./answer');
+const questionRouter      = require('./question');
 const screeningRouter   = require('./screening');
 
 var appRouter = new Router();
@@ -27,8 +27,8 @@ composeRoute('', rootRouter);
 composeRoute('screenings', screeningRouter);
 //Add client Router
 composeRoute('screenings/clients', clientRouter);
-//Add answer Router
-composeRoute('screenings/answers', answerRouter);
+//Add question Router
+composeRoute('screenings/questions', questionRouter);
 
 function composeRoute(endpoint, router){
   appRouter.use(`/${endpoint}`, router.routes(), router.allowedMethods());
