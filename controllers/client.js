@@ -162,8 +162,6 @@ exports.create = function* createClient(next) {
       questions.push(question);
     }
 
-    return this.body = questions;
-
     // Create Section Types
     for(let section of screeningForm.sections) {
       let _questions = [];
@@ -660,7 +658,7 @@ exports.getClientScreening = function* getClientScreening(next) {
 function createQuestion(question) {
   return co(function* () {
     if(!question._id) {
-      question = yield QuestionDal.get({ _id: question });
+      question = yield QuestionDal.get({ question_text: question.question_text });
 
       question = question.toJSON();
     }
