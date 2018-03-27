@@ -653,9 +653,13 @@ exports.getClientScreening = function* getClientScreening(next) {
 function createQuestion(question) {
   return co(function* () {
     if(!question._id) {
-      question = yield QuestionDal.get({ _id: question });
+      try {
+        question = yield QuestionDal.get({ _id: question });
 
-      question = question.toJSON();
+        question = question.toJSON();
+      } catch(ex) {
+        throw new Error(JSON.stringify(question))
+      }
     }
 
     let subs = [];
