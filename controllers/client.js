@@ -141,7 +141,6 @@ exports.create = function* createClient(next) {
       }
     }
 
-    return this.body = screeningForm;
 
     body.created_by = this.state._user._id;
 
@@ -162,6 +161,8 @@ exports.create = function* createClient(next) {
 
       questions.push(question);
     }
+
+    return this.body = questions;
 
     // Create Section Types
     for(let section of screeningForm.sections) {
