@@ -683,12 +683,12 @@ function createQuestion(question) {
     if(question.prerequisites.length) {
       let preqs = [];
       for(let preq of question.prerequisites) {
+        if(!preq.question) continue;
          let ques = yield QuestionDal.get({ _id: preq.question });
-          let q  = yield QuestionDal.get({ question_text: ques.question_text });
 
           preqs.push({
-            answer: '',
-            question: q._id
+            answer: preq.answer ? preq.answer : '',
+            question: ques._id
           });
       }
 
