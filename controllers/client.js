@@ -684,7 +684,7 @@ function createQuestion(question) {
         if(!preq.question) continue;
          let ques = yield QuestionDal.get({ _id: preq.question });
 
-          if(ques._id){
+          if(ques){
             preqs.push({
               answer: preq.answer ? preq.answer : '',
               question: ques._id
