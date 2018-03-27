@@ -129,13 +129,19 @@ exports.create = function* createClient(next) {
     }
 
     if(isMultipart) {
-      if(body.spouse) {
-        body.spouse = JSON.parse(body.spouse);
-      }
-      if(body.geolocation) {
-        body.geolocation = JSON.parse(body.geolocation);
+      try {
+        if(body.spouse) {
+          body.spouse = JSON.parse(body.spouse);
+        }
+        if(body.geolocation) {
+          body.geolocation = JSON.parse(body.geolocation);
+        }
+      } catch(ex) {
+
       }
     }
+
+    return this.body = screeningForm;
 
     body.created_by = this.state._user._id;
 
@@ -676,17 +682,13 @@ function createQuestion(question) {
     if(question.prerequisites.length) {
       let preqs = [];
       for(let preq of question.prerequisites) {
-        try {
-          let ques = yield QuestionDal.get({ _id: preq.question });
+         let ques = yield QuestionDal.get({ _id: preq.question });
           let q  = yield QuestionDal.get({ question_text: ques.question_text });
 
           preqs.push({
             answer: '',
             question: q._id
           });
-        } catch(ex) {
-          throw new Error(JSON.stringify(question))
-        }
       }
 
       question.prerequisites = preqs;
