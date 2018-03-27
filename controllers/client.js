@@ -207,7 +207,7 @@ exports.create = function* createClient(next) {
   } catch(ex) {
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
-      message: JSON.stringify(ex)
+      message: ex.message
     }));
   }
 
