@@ -199,10 +199,9 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
-    console.log(ex);
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
-      message: ex.message
+      message: JSON.stringify(ex)
     }));
   }
 
@@ -688,8 +687,6 @@ function createQuestion(question) {
 
       question.prerequisites = preqs;
     }
-
-    console.log(question)
 
     question = yield QuestionDal.create(question);
 
