@@ -90,7 +90,7 @@ exports.create = function* createClient(next) {
 
   if(errors.length) {
     return this.throw(new CustomError({
-      type: 'MFI_CREATION_ERROR',
+      type: 'CLIENT_CREATE_ERROR',
       message: JSON.stringify(errors)
     }));
   }
@@ -99,8 +99,6 @@ exports.create = function* createClient(next) {
     let screeningForm = yield FormDal.get({ type: 'SCREENING' });
     if(!screeningForm || !screeningForm._id) {
       throw new Error('Screening Form Is Needed To Be Created In Order To Continue!')
-    } else {
-      throw new Error(JSON.stringify(screeningForm));
     }
 
     let client = yield ClientDal.get({ national_id_no: body.national_id_no });
