@@ -653,13 +653,9 @@ exports.getClientScreening = function* getClientScreening(next) {
 function createQuestion(question) {
   return co(function* () {
     if(!question._id) {
-      try {
-        question = yield QuestionDal.get({ _id: question });
+      question = yield QuestionDal.get({ _id: question });
 
-        question = question.toJSON();
-      } catch(ex) {
-        throw new Error(JSON.stringify(question))
-      }
+      question = question.toJSON();
     }
 
     let subs = [];
@@ -680,13 +676,17 @@ function createQuestion(question) {
     if(question.prerequisites.length) {
       let preqs = [];
       for(let preq of question.prerequisites) {
-        let ques = yield QuestionDal.get({ _id: preq.question });
-        let q  = yield QuestionDal.get({ question_text: ques.question_text });
+        try {
+          let ques = yield QuestionDal.get({ _id: preq.question });
+          let q  = yield QuestionDal.get({ question_text: ques.question_text });
 
-        preqs.push({
-          answer: '',
-          question: q._id
-        })
+          preqs.push({
+            answer: '',
+            question: q._id
+          });
+        } catch(ex) {
+          throw new Error(JSON.stringify(question))
+        }
       }
 
       question.prerequisites = preqs;
