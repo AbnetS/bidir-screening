@@ -229,11 +229,12 @@ exports.fetchOne = function* fetchOneClient(next) {
 
   try {
     let client = yield ClientDal.get(query);
+    if(!client) throw new Error('Client Does Not Exist!!');
 
     yield LogDal.track({
       event: 'view_client',
-      client: this.state._user._id ,
-      message: `View client - ${client.phone}`
+      user: this.state._user._id ,
+      message: `View client - ${client._id}`
     });
 
     this.body = client;
@@ -269,6 +270,7 @@ exports.updateStatus = function* updateClient(next) {
 
   try {
     let client = yield ClientDal.update(query, body);
+    if(!client) throw new Error('Client Does Not Exist!!');
 
     yield LogDal.track({
       event: 'client_status_update',
@@ -315,6 +317,7 @@ exports.update = function* updateClient(next) {
 
   try {
     let client = yield ClientDal.update(query, body);
+    if(!client) throw new Error('Client Does Not Exist!!');
 
     yield LogDal.track({
       event: 'client_update',
@@ -657,7 +660,7 @@ exports.getClientScreening = function* getClientScreening(next) {
 // Utilities
 function createQuestion(question) {
   return co(function* () {
-    if(!question._id) {
+    if(question) {
       question = yield QuestionDal.get({ question_text: question.question_text });
 
       question = question.toJSON();
