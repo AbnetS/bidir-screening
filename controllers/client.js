@@ -663,6 +663,8 @@ function createQuestion(question) {
     if(question) {
       question = yield QuestionDal.get({ question_text: question.question_text });
 
+      if(!question) return;
+
       question = question.toJSON();
     }
 
