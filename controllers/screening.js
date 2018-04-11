@@ -268,10 +268,11 @@ exports.update = function* updateScreening(next) {
     }
     let screening = yield ScreeningDal.get(query);
     let client    = yield ClientDal.get({ _id: screening.client });
+    let comment = body.comment ? body.comment : '';
 
     if(body.status === 'approved') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'eligible' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed', comment: comment });
       if(task) {
         yield NotificationDal.create({
           for: task.created_by,
@@ -282,7 +283,7 @@ exports.update = function* updateScreening(next) {
 
     } else if(body.status === 'declined_final') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'ineligible' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed', comment: comment });
       if(task) {
         yield NotificationDal.create({
           for: task.created_by,
@@ -294,7 +295,7 @@ exports.update = function* updateScreening(next) {
 
     } else if(body.status === 'declined_under_review') {
       client = yield ClientDal.update({ _id: screening.client }, { status: 'screening_inprogress' });
-      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed' });
+      let task = yield TaskDal.update({ entity_ref: screening._id }, { status: 'completed', comment: comment });
       if(task) {
         // Create Review Task
         let _task = yield TaskDal.create({
@@ -304,7 +305,8 @@ exports.update = function* updateScreening(next) {
           entity_type: 'screening',
           created_by: this.state._user._id,
           user: task.created_by,
-          branch: screening.branch
+          branch: screening.branch,
+          comment: comment
         });
         yield NotificationDal.create({
           for: this.state._user._id,
@@ -349,7 +351,8 @@ exports.update = function* updateScreening(next) {
         entity_ref: screening._id,
         entity_type: 'screening',
         created_by: this.state._user._id,
-        branch: screening.branch
+        branch: screening.branch,
+        comment: comment
       })
     }
 

@@ -28,6 +28,7 @@ var ScreeningSchema = new Schema({
     client:         { type: Schema.Types.ObjectId, ref: 'Client' },
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     status:         { type: String, default: 'new' },
+    comment:        { type: String, default: '' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -75,6 +76,7 @@ ScreeningSchema.statics.attributes = {
   client: 1,
   status: 1,
   branch: 1,
+  comment: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1
