@@ -391,7 +391,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
 
-  if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
+  /*if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
     return this.throw(new CustomError({
       type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
       message: 'Query Source should be either web or app'
@@ -403,7 +403,8 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
       message: "You Don't have enough permissions to complete this action"
     }));
-  }
+  }*/
+
   let sortType = this.query.sort_by;
   let sort = {};
   sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
@@ -449,6 +450,12 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
       query = {
           created_by: user._id
         };
+    }
+
+    if(this.query.show_active) {
+      query.status = {
+        $in: ['screening_inprogress','submitted', 'new', 'declined_under_review']
+      };
     }
 
     let screenings = yield ScreeningDal.getCollectionByPagination(query, opts);
