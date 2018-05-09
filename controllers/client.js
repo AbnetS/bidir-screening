@@ -21,6 +21,9 @@ const checkPermissions   = require('../lib/permissions');
 const FORM                = require ('../lib/enums').FORM;
 
 const Account            = require('../models/account');
+const Question           = require('../models/question');
+const Form               = require('../models/form');
+const Section            = require('../models/section');
 
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
@@ -96,7 +99,7 @@ exports.create = function* createClient(next) {
   }
 
   try {
-    let screeningForm = yield FormDal.get({ type: 'SCREENING' });
+    let screeningForm = yield Form.findOne({ type: 'SCREENING' }).exec();
     if(!screeningForm || !screeningForm._id) {
       throw new Error('Screening Form Is Needed To Be Created In Order To Continue!')
     }
@@ -156,26 +159,36 @@ exports.create = function* createClient(next) {
 
    // Create Answer Types
     for(let question of screeningForm.questions) {
-
       question = yield createQuestion(question);
 
-      questions.push(question);
+      if(question) {
+        questions.push(question._id);
+      }
     }
 
     // Create Section Types
     for(let section of screeningForm.sections) {
+      section = yield Section.findOne({ _id: section }).exec();
+      if(!section) continue;
+      section = section.toJSON();
+
       let _questions = [];
       delete section._id;
 
       if(section.questions.length) {
+
         for(let question of section.questions) {
-
           question = yield createQuestion(question);
+          if(question) {
+            _questions.push(question._id);
+          }
 
-          _questions.push(question);
+          
         }
 
       }
+
+
 
       section.question = _questions;
 
@@ -183,6 +196,9 @@ exports.create = function* createClient(next) {
 
       sections.push(_section);
     }
+
+    console.log(questions)
+    console.log(sections)
 
     screeningBody.questions = questions.slice();
     screeningBody.sections = sections.slice();
@@ -204,6 +220,7 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
+    console.log(ex)
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: ex.message
@@ -660,13 +677,15 @@ exports.getClientScreening = function* getClientScreening(next) {
 // Utilities
 function createQuestion(question) {
   return co(function* () {
-    if(question) {
-      question = yield QuestionDal.get({ question_text: question.question_text });
+    createQuestion._refs = createQuestion._refs || [];
 
+    if(question) {
+      question = yield Question.findOne({ _id: question }).exec();
       if(!question) return;
 
       question = question.toJSON();
     }
+
 
     let subs = [];
     delete question._id;
@@ -690,10 +709,27 @@ function createQuestion(question) {
          let ques = yield QuestionDal.get({ _id: preq.question });
 
           if(ques){
-            preqs.push({
-              answer: preq.answer ? preq.answer : '',
-              question: ques._id
-            });
+            let isCreated = false;
+
+            for(let ref of createQuestion._refs) {
+              if(ques._id.toString() == ref.toString()){ isCreated = true };
+            }
+
+            if(isCreated) {
+               preqs.push({
+                answer: preq.answer ? preq.answer : '',
+                question: ques._id
+              });
+            } else {
+              delete ques._id;
+              let preqQues = yield createQuestion(ques);
+              preqs.push({
+                answer: preq.answer ? preq.answer : '',
+                question: preqQues._id
+              });
+            }
+            
+           
           }
       }
 
@@ -701,6 +737,8 @@ function createQuestion(question) {
     }
 
     question = yield QuestionDal.create(question);
+
+    createQuestion._refs.push(question._id);
 
     return question;
 
