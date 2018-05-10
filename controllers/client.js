@@ -194,11 +194,8 @@ exports.create = function* createClient(next) {
 
       let _section = yield SectionDal.create(section);
 
-      sections.push(_section);
+      sections.push(_section._id);
     }
-
-    console.log(questions)
-    console.log(sections)
 
     screeningBody.questions = questions.slice();
     screeningBody.sections = sections.slice();
@@ -220,7 +217,6 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
-    console.log(ex)
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: ex.message
@@ -695,7 +691,9 @@ function createQuestion(question) {
         delete sub._id;
         let ans = yield createQuestion(sub);
 
-        subs.push(ans);
+        if(ans) {
+          subs.push(ans);
+        }
       }
 
       question.sub_questions = subs;
@@ -723,10 +721,12 @@ function createQuestion(question) {
             } else {
               delete ques._id;
               let preqQues = yield createQuestion(ques);
-              preqs.push({
-                answer: preq.answer ? preq.answer : '',
-                question: preqQues._id
-              });
+              if(preqQues) {
+                preqs.push({
+                  answer: preq.answer ? preq.answer : '',
+                  question: preqQues._id
+                });
+              }
             }
             
            
