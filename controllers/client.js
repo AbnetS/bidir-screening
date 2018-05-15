@@ -146,8 +146,6 @@ exports.create = function* createClient(next) {
       }
     }
 
-    console.log(body.geolocation)
-
 
     body.created_by = this.state._user._id;
 
@@ -180,7 +178,6 @@ exports.create = function* createClient(next) {
 
       let _questions = [];
       delete section._id;
-
       if(section.questions.length) {
 
         for(let question of section.questions) {
@@ -188,6 +185,7 @@ exports.create = function* createClient(next) {
           question = yield createQuestion(question);
           if(question) {
             yield createPrerequisites();
+
             _questions.push(question._id);
           }
 
@@ -196,9 +194,7 @@ exports.create = function* createClient(next) {
 
       }
 
-
-
-      section.question = _questions;
+      section.questions = _questions;
 
       let _section = yield SectionDal.create(section);
 
@@ -225,7 +221,6 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
-    console.log(ex)
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: ex.message
@@ -699,7 +694,7 @@ function createQuestion(question) {
         let ans = yield createQuestion(sub);
 
         if(ans) {
-          subs.push(ans);
+          subs.push(ans._id);
         }
       }
 
@@ -718,6 +713,8 @@ function createQuestion(question) {
       prerequisites: prerequisites
     });
 
+
+
     return question;
 
   })
@@ -730,7 +727,7 @@ function createPrerequisites() {
       for(let question of PREQS) {
         let preqs = [];
         for(let  prerequisite of question.prerequisites) {
-          let preq = yield Question.findOne({ _id: prerequisite }).exec();
+          let preq = yield Question.findOne({ _id: prerequisite.question }).exec();
 
           let ques = yield findQuestion(preq.question_text);
           if(ques) {
