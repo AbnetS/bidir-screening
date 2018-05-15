@@ -18,7 +18,7 @@ const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const googleBuckets      = require('../lib/google-buckets');
 const checkPermissions   = require('../lib/permissions');
-const FORM                = require ('../lib/enums').FORM;
+const FORM               = require ('../lib/enums').FORM;
 
 const Account            = require('../models/account');
 const Question           = require('../models/question');

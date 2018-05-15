@@ -322,23 +322,38 @@ exports.update = function* updateScreening(next) {
     
     let mandatory = false;
 
-    if(body.questions) {
-      let questions = [];
+    for(let section of body.sections) {
+      if(section._id) {
+        for(let question of section.questions) {
+          yield updateQuestions(question);
+        }
+      }
+    }
+    delete body.sections;
 
-      for(let question of body.questions) {
-        let questionID = question._id;
+    for(let question of body.questions) {
+      if(question._id) {
+        yield updateQuestions(question);
+      }
+    }
+    delete body.questions;
 
-        delete question._id;
+    function updateQuestions(question) {
+      return co(function* () {
+        let subQuestions = question.sub_questions.slice();
+        let ref = question._id;
+
+        delete question.sub_questions;
         delete question._v;
         delete question.date_created;
         delete question.last_modified;
 
-        let result = yield QuestionDal.update({ _id: questionID }, question);
+        yield QuestionDal.update({ _id: ref }, question);
 
-        questions.push(result);
-      }
-
-      body.questions = questions;
+        for(let subQuestion of subQuestions) {
+            yield updateQuestions(subQuestion);
+        }
+      })
     }
 
     screening = yield ScreeningDal.update(query, body);
