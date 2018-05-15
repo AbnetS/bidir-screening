@@ -160,8 +160,8 @@ exports.create = function* createClient(next) {
     screeningForm = screeningForm.toJSON();
 
    // Create Answer Types
+   PREQS = [];
     for(let question of screeningForm.questions) {
-      PREQS = [];
       question = yield createQuestion(question);
 
       if(question) {
@@ -172,6 +172,7 @@ exports.create = function* createClient(next) {
     yield createPrerequisites();
 
     // Create Section Types
+    PREQS = [];
     for(let section of screeningForm.sections) {
       section = yield Section.findOne({ _id: section }).exec();
       if(!section) continue;
