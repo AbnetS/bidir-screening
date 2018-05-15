@@ -36,6 +36,8 @@ const SectionDal         = require('../dal/section');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
+let PREQS = [];
+
 /**
  * Create a client.
  *
@@ -144,6 +146,8 @@ exports.create = function* createClient(next) {
       }
     }
 
+    console.log(body.geolocation)
+
 
     body.created_by = this.state._user._id;
 
@@ -159,9 +163,11 @@ exports.create = function* createClient(next) {
 
    // Create Answer Types
     for(let question of screeningForm.questions) {
+      PREQS = [];
       question = yield createQuestion(question);
 
       if(question) {
+        yield createPrerequisites();
         questions.push(question._id);
       }
     }
@@ -178,8 +184,10 @@ exports.create = function* createClient(next) {
       if(section.questions.length) {
 
         for(let question of section.questions) {
+          PREQS = [];
           question = yield createQuestion(question);
           if(question) {
+            yield createPrerequisites();
             _questions.push(question._id);
           }
 
@@ -217,6 +225,7 @@ exports.create = function* createClient(next) {
     this.body = client;
 
   } catch(ex) {
+    console.log(ex)
     this.throw(new CustomError({
       type: 'CLIENT_CREATION_ERROR',
       message: ex.message
@@ -673,8 +682,6 @@ exports.getClientScreening = function* getClientScreening(next) {
 // Utilities
 function createQuestion(question) {
   return co(function* () {
-    createQuestion._refs = createQuestion._refs || [];
-
     if(question) {
       question = yield Question.findOne({ _id: question }).exec();
       if(!question) return;
@@ -699,48 +706,65 @@ function createQuestion(question) {
       question.sub_questions = subs;
     }
 
-    // TODO on not created question
-    if(question.prerequisites.length) {
-      let preqs = [];
-      for(let preq of question.prerequisites) {
-        if(!preq.question) continue;
-         let ques = yield QuestionDal.get({ _id: preq.question });
+    let prerequisites = question.prerequisites.slice();
 
-          if(ques){
-            let isCreated = false;
-
-            for(let ref of createQuestion._refs) {
-              if(ques._id.toString() == ref.toString()){ isCreated = true };
-            }
-
-            if(isCreated) {
-               preqs.push({
-                answer: preq.answer ? preq.answer : '',
-                question: ques._id
-              });
-            } else {
-              delete ques._id;
-              let preqQues = yield createQuestion(ques);
-              if(preqQues) {
-                preqs.push({
-                  answer: preq.answer ? preq.answer : '',
-                  question: preqQues._id
-                });
-              }
-            }
-            
-           
-          }
-      }
-
-      question.prerequisites = preqs;
-    }
+    question.prerequisites = [];
 
     question = yield QuestionDal.create(question);
 
-    createQuestion._refs.push(question._id);
+    PREQS.push({
+      _id: question._id,
+      question_text: question.question_text,
+      prerequisites: prerequisites
+    });
 
     return question;
 
+  })
+}
+
+
+function createPrerequisites() {
+  return co(function*() {
+    if(PREQS.length) {
+      for(let question of PREQS) {
+        let preqs = [];
+        for(let  prerequisite of question.prerequisites) {
+          let preq = yield Question.findOne({ _id: prerequisite }).exec();
+
+          let ques = yield findQuestion(preq.question_text);
+          if(ques) {
+            preqs.push({
+              answer: prerequisite.answer,
+              question: ques._id
+            })
+          }
+        }
+
+        yield QuestionDal.update({ _id: question._id }, {
+          prerequisites: preqs
+        })
+      }
+    } 
+  })
+}
+
+function findQuestion(text) {
+  return co(function* () {
+    let found = null;
+
+    if(PREQS.length) {
+      for(let question of PREQS) {
+
+        question = yield Question.findOne({ _id: question._id }).exec();
+
+        if(question.question_text == text) {
+          found = question;
+          break;
+        }
+      }
+    }
+
+    return found;
   })
 }
