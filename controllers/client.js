@@ -165,10 +165,11 @@ exports.create = function* createClient(next) {
       question = yield createQuestion(question);
 
       if(question) {
-        yield createPrerequisites();
         questions.push(question._id);
       }
     }
+
+    yield createPrerequisites();
 
     // Create Section Types
     for(let section of screeningForm.sections) {
@@ -184,7 +185,6 @@ exports.create = function* createClient(next) {
           PREQS = [];
           question = yield createQuestion(question);
           if(question) {
-            yield createPrerequisites();
 
             _questions.push(question._id);
           }
@@ -200,6 +200,8 @@ exports.create = function* createClient(next) {
 
       sections.push(_section._id);
     }
+
+    yield createPrerequisites();
 
     screeningBody.questions = questions.slice();
     screeningBody.sections = sections.slice();
