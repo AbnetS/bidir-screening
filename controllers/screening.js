@@ -340,7 +340,7 @@ exports.update = function* updateScreening(next) {
 
     function updateQuestions(question) {
       return co(function* () {
-        let subQuestions = question.sub_questions.slice();
+        let subQuestions = Array.isArray(question.sub_questions) ? question.sub_questions.slice() : [];
         let ref = question._id;
 
         delete question.sub_questions;
