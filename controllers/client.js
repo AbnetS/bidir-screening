@@ -13,6 +13,7 @@ const _          = require('lodash');
 const co         = require('co');
 const del        = require('del');
 const validator  = require('validator');
+const fs         = require('fs-extra')
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
@@ -111,15 +112,27 @@ exports.create = function* createClient(next) {
       throw new Error('Client with those details already exists!!');
     }
 
+    console.log(body)
+
     if(body.national_id_card) {
       let filename  = body.first_name.trim().toUpperCase().split(/\s+/).join('_');
       let id        = crypto.randomBytes(6).toString('hex');
       let extname   = path.extname(body.national_id_card.name);
       let assetName = `${filename}_${id}${extname}`;
 
-      let url       = yield googleBuckets(body.national_id_card.path, assetName);
+      yield fs.move(body.national_id_card.path, `./assets/${assetName}`)
+      yield fs.remove(body.national_id_card.path);
+      
+      body.national_id_card = `http://api.dev.bidir.gebeya.co/screening/assets/${assetName}`
 
-      body.national_id_card = url;
+
+      /*try {
+        let url       = yield googleBuckets(body.national_id_card.path, assetName);
+
+        body.national_id_card = url;
+      } catch(ex) {
+        body.national_id_card = `http://api.dev.bidir.gebeya.co/screening/assets/${body.national_id_card.path}`
+      }*/
     }
 
     if(body.picture) {
@@ -128,9 +141,19 @@ exports.create = function* createClient(next) {
       let extname   = path.extname(body.picture.name);
       let assetName = `${filename}_${id}${extname}`;
 
-      let url       = yield googleBuckets(body.picture.path, assetName);
+      yield fs.move(body.picture.path, `./assets/${assetName}`)
+      yield fs.remove(body.picture.path);
+      
+      body.picture = `http://api.dev.bidir.gebeya.co/screening/assets/${assetName}`
 
-      body.picture = url;
+
+      /*try {
+        let url       = yield googleBuckets(body.picture.path, assetName);
+
+        body.picture = url;
+      } catch(ex) {
+        body.picture = `http://api.dev.bidir.gebeya.co/screening/assets/${body.picture.path}`
+      }*/
     }
 
     if(isMultipart) {
