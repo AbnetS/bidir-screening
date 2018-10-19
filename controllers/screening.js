@@ -78,6 +78,12 @@ exports.create = function* createScreening(next) {
       throw new Error('Screening Form for the client does not exist!!');
     }
 
+    if(screening.status === "new" 
+      || screening.status === "screening_inprogress"
+      || screening.status === "submitted") {
+      throw new Error('Last Screening is still in progress!!')
+    }
+
     let screeningBody = {};
     let questions = [];
     let sections = [];
