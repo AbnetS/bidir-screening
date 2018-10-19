@@ -13,6 +13,57 @@ var router  = Router();
 
 
 /**
+ * @api {post} /screenings/create Create Screening
+ * @apiVersion 1.0.0
+ * @apiName Create
+ * @apiGroup Screening 
+ *
+ * @apiDescription Create a Screening for client with the given id
+ *
+ * @apiParam {String} Client Client
+ *
+ * @apiParamExample Request example:
+ * {
+ *    client: "556e1174a8952c9521286a60"
+ * }
+ *
+ * @apiSuccess {String} _id screening id
+ * @apiSuccess {String} type Form Type SCREENING
+ * @apiSuccess {String} subtitle Form Subtitle
+ * @apiSuccess {String} title Form Title
+ * @apiSuccess {String} purpose Form Purpose
+ * @apiSuccess {Array} questions Form Questions
+ * @apiSuccess {String} layout Form Layout ie TWO_COLUMNS or THREE_COLUMNS 
+ * @apiSuccess {Array} sections Form Sections
+ * @apiSuccess {Boolean} has_sections If Form has Sections
+ * @apiSuccess {String} disclaimer Disclaimer
+ * @apiSuccess {Array} signatures Accepted Signatures
+ * @apiSuccess {String} created_by User registering this
+ * @apiSuccess {String} client Client Reference being screened
+ * @apiSuccess {String} status Status ie incomplete, completed, cancelled, approved or submitted
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    _id : "556e1174a8952c9521286a60",
+ *    type: "Screening",
+ *    description: "This is a Description",
+ *    title: "MFI Screening Title",
+ *    process: "",
+ *    answers: ]{
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    }],
+ *    created_by: {
+ *     _id : "556e1174a8952c9521286a60",
+ *       ....
+ *    },
+ *    status: "cancelled"
+ *  }
+ */
+router.post('/create', acl(['*']), screeningController.create);
+
+
+/**
  * @api {get} /screenings/paginate?page=<RESULTS_PAGE>&per_page=<RESULTS_PER_PAGE> Get screenings collection
  * @apiVersion 1.0.0
  * @apiName FetchPaginated

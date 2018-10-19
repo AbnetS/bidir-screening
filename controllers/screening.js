@@ -20,6 +20,11 @@ const CustomError        = require('../lib/custom-error');
 const checkPermissions   = require('../lib/permissions');
 
 const Account            = require('../models/account');
+const Screening          = require('../models/screening');
+const Question           = require('../models/question');
+const Form               = require('../models/form');
+const Section            = require('../models/section');
+const History          = require('../models/history');
 
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
@@ -28,8 +33,12 @@ const LogDal             = require('../dal/log');
 const NotificationDal    = require('../dal/notification');
 const ClientDal          = require('../dal/client');
 const TaskDal            = require('../dal/task');
+const AccountDal         = require('../dal/account');
+const SectionDal         = require('../dal/section');
+const HistoryDal          = require('../dal/history');
 
 let hasPermission = checkPermissions.isPermitted('SCREENING');
+let PREQS = [];
 
 /**
  * Create a screening.
@@ -61,41 +70,87 @@ exports.create = function* createScreening(next) {
       throw new Error('Client With Those Details Does Not Exist!!');
     }
 
-    let screening = yield ScreeningDal.get({ client: body.client });
-    if(screening) {
-      throw new Error('Screening Form for the client already exists!!');
+    // Get Last Screening
+    let screening = yield Screening.findOne({ client: body.client })
+      .sort({ date_created: 1 })
+      .exec();
+    if(!screening) {
+      throw new Error('Screening Form for the client does not exist!!');
     }
 
+    let screeningBody = {};
     let questions = [];
+    let sections = [];
 
-    // Create Question Types
-    for(let question of body.questions) {
-      let subs = [];
+      // Create Answer Types
+     PREQS = [];
+      for(let question of screening.questions) {
+        question = yield createQuestion(question);
 
-      if(question.sub_questions) {
-        for(let sub of question.sub_questions) {
-          let ans = yield QuestionDal.create(sub);
-
-          subs.push(ans);
+        if(question) {
+          questions.push(question._id);
         }
       }
-      question.sub_questions = subs;
-      question = yield QuestionDal.create(question);
 
-      questions.push(question);
-    }
+      yield createPrerequisites();
 
-    body.questions = questions;
-    body.client = client._id;
-    body.title = 'Screening Form';
-    body.description = `Screening Application For ${client.first_name} ${client.last_name}`;
-    body.created_by = this.state._user._id;
-    body.branch = client.branch._id;
+      // Create Section Types
+      PREQS = [];
+      for(let section of screening.sections) {
+        section = yield Section.findOne({ _id: section }).exec();
+        if(!section) continue;
+        section = section.toJSON();
+
+        let _questions = [];
+        delete section._id;
+        if(section.questions.length) {
+
+          for(let question of section.questions) {
+            PREQS = [];
+            question = yield createQuestion(question);
+            if(question) {
+
+              _questions.push(question._id);
+            }
+
+            
+          }
+
+        }
+
+        section.questions = _questions;
+
+        let _section = yield SectionDal.create(section);
+
+        sections.push(_section._id);
+      }
+
+      yield createPrerequisites();
+
+      screeningBody.questions = questions.slice();
+      screeningBody.sections = sections.slice();
+      screeningBody.client = client._id;
+      screeningBody.title = screening.title;
+      screeningBody.subtitle = screening.subtitle;
+      screeningBody.purpose = screening.purpose;
+      screeningBody.layout = screening.layout;
+      screeningBody.has_sections = screening.has_sections;
+      screeningBody.disclaimer = screening.disclaimer;
+      screeningBody.signatures = screening.signatures.slice();
+      screeningBody.created_by = this.state._user._id;
+      screeningBody.branch = client.branch._id;
+
 
     // Create Screening Type
-    screening = yield ScreeningDal.create(body);
+    let newscreening = yield ScreeningDal.create(screeningBody);
 
-    this.body = screening;
+    yield History.findOneAndUpdate({
+      client: client._id
+    },{
+      $push: { screenings: newscreening._id }
+    })
+
+    this.body = newscreening;
 
   } catch(ex) {
     this.throw(new CustomError({
@@ -634,3 +689,96 @@ exports.search = function* searchScreenings(next) {
     }));
   }
 };
+
+
+// Utilities
+function createQuestion(question) {
+  return co(function* () {
+    if(question) {
+      question = yield Question.findOne({ _id: question }).exec();
+      if(!question) return;
+
+      question = question.toJSON();
+    }
+
+
+    let subs = [];
+    delete question._id;
+
+    if(question.sub_questions.length) {
+      for(let sub of question.sub_questions) {
+        delete sub._id;
+        let ans = yield createQuestion(sub);
+
+        if(ans) {
+          subs.push(ans._id);
+        }
+      }
+
+      question.sub_questions = subs;
+    }
+
+    let prerequisites = question.prerequisites.slice();
+
+    question.prerequisites = [];
+
+    question = yield QuestionDal.create(question);
+
+    PREQS.push({
+      _id: question._id,
+      question_text: question.question_text,
+      prerequisites: prerequisites
+    });
+
+
+
+    return question;
+
+  })
+}
+
+
+function createPrerequisites() {
+  return co(function*() {
+    if(PREQS.length) {
+      for(let question of PREQS) {
+        let preqs = [];
+        for(let  prerequisite of question.prerequisites) {
+          let preq = yield Question.findOne({ _id: prerequisite.question }).exec();
+
+          let ques = yield findQuestion(preq.question_text);
+          if(ques) {
+            preqs.push({
+              answer: prerequisite.answer,
+              question: ques._id
+            })
+          }
+        }
+
+        yield QuestionDal.update({ _id: question._id }, {
+          prerequisites: preqs
+        })
+      }
+    } 
+  })
+}
+
+function findQuestion(text) {
+  return co(function* () {
+    let found = null;
+
+    if(PREQS.length) {
+      for(let question of PREQS) {
+
+        question = yield Question.findOne({ _id: question._id }).exec();
+
+        if(question.question_text == text) {
+          found = question;
+          break;
+        }
+      }
+    }
+
+    return found;
+  })
+}

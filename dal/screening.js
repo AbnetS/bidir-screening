@@ -217,3 +217,24 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 
 
 };
+
+/**
+ * get a screening.
+ *
+ * @desc get a screening with the given id from db
+ *
+ * @param {Object} query Query Object
+ *
+ * @return {Promise}
+ */
+exports.getLast = function get(query, screening) {
+  debug('getting screening ', query);
+
+  return Screening.findOne(query, returnFields)
+    .sort({
+      date_created: -1
+    })
+    .populate(population)
+    .exec();
+
+};

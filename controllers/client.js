@@ -25,6 +25,7 @@ const Account            = require('../models/account');
 const Question           = require('../models/question');
 const Form               = require('../models/form');
 const Section            = require('../models/section');
+const History            = require('../models/history');
 
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
@@ -34,6 +35,7 @@ const FormDal            = require('../dal/form');
 const AccountDal         = require('../dal/account');
 const QuestionDal        = require('../dal/question');
 const SectionDal         = require('../dal/section');
+const HistoryDal         = require('../dal/history');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
@@ -112,7 +114,6 @@ exports.create = function* createClient(next) {
       throw new Error('Client with those details already exists!!');
     }
 
-    console.log(body)
 
     if(body.national_id_card) {
       let filename  = body.first_name.trim().toUpperCase().split(/\s+/).join('_');
@@ -240,9 +241,17 @@ exports.create = function* createClient(next) {
     screeningBody.created_by = this.state._user._id;
     screeningBody.branch = client.branch._id;
 
-
     // Create Screening Type
     let screening = yield ScreeningDal.create(screeningBody);
+
+    // start history tracking
+    yield HistoryDal.create({
+      client: client._id,
+      started_by: this.state._user._id,
+      last_edit_by: this.state._user._id,
+      screenings: [screening._id],
+      branch: client.branch._id
+    })
 
     this.body = client;
 
