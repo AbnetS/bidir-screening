@@ -72,7 +72,7 @@ exports.create = function* createScreening(next) {
 
     // Get Last Screening
     let screening = yield Screening.findOne({ client: body.client })
-      .sort({ date_created: 1 })
+      .sort({ date_created: -1 })
       .exec();
     if(!screening) {
       throw new Error('Screening Form for the client does not exist!!');
