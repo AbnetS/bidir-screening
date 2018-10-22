@@ -383,21 +383,25 @@ exports.update = function* updateScreening(next) {
     
     let mandatory = false;
 
-    for(let section of body.sections) {
-      if(section._id) {
-        for(let question of section.questions) {
+    if (body.sections) {
+      for(let section of body.sections) {
+        if(section._id) {
+          for(let question of section.questions) {
+            yield updateQuestions(question);
+          }
+        }
+      }
+      delete body.sections;
+    }
+
+    if (body.questions) {
+      for(let question of body.questions) {
+        if(question._id) {
           yield updateQuestions(question);
         }
       }
+      delete body.questions;
     }
-    delete body.sections;
-
-    for(let question of body.questions) {
-      if(question._id) {
-        yield updateQuestions(question);
-      }
-    }
-    delete body.questions;
 
     function updateQuestions(question) {
       return co(function* () {
