@@ -24,7 +24,8 @@ const Screening          = require('../models/screening');
 const Question           = require('../models/question');
 const Form               = require('../models/form');
 const Section            = require('../models/section');
-const History          = require('../models/history');
+const History            = require('../models/history');
+const ClientACAT         = require('../models/clientACAT');
 
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
@@ -70,19 +71,7 @@ exports.create = function* createScreening(next) {
       throw new Error('Client With Those Details Does Not Exist!!');
     }
 
-    // Get Last Screening
-    let screening = yield Screening.findOne({ client: body.client })
-      .sort({ date_created: -1 })
-      .exec();
-    if(!screening) {
-      throw new Error('Screening Form for the client does not exist!!');
-    }
-
-    if(screening.status === "new" 
-      || screening.status === "screening_inprogress"
-      || screening.status === "submitted") {
-      throw new Error('Last Screening is still in progress!!')
-    }
+    let screening = yield validateCycle(body);
 
     let screeningBody = {};
     let questions = [];
@@ -790,5 +779,53 @@ function findQuestion(text) {
     }
 
     return found;
+  })
+}
+
+function validateCycle(body) {
+  return co(function*(){
+    debug("Validating loan cycle")
+    // Validate Screenings
+    let screenings = yield Screening.find({ client: body.client })
+      .sort({ date_created: -1 })
+      .exec();
+    if(!screenings.length) {
+      throw new Error('Client Has Not Screening Form Yet!');
+    }
+
+    for(let screening of screenings) {
+      if(screening.status === "new" || screening.status === "screening_inprogress" || screening.status === "submitted") {
+        throw new Error('Client Has A Screening in progress!!')
+      }
+    }
+
+    // Validate Loans
+    let loans = yield Loan.find({ client: body.client })
+      .sort({ date_created: -1 })
+      .exec();
+
+    for(let loan of loans) {
+      if(loan.status === 'new' || loan.status === 'submitted' || loan.status === "inprogress") {
+        throw new Error('Client Has A Loan in progress!!')
+      }
+    }
+
+    // Validate acats
+    let clientACATS = yield ClientACAT.find({ client: body.client })
+      .sort({ date_created: -1 })
+      .exec();
+
+    for(let acat of clientACATS) {
+      if(acat.status === 'new' || acat.status === 'submitted' || acat.status === 'resubmitted' || acat.status === "inprogress") {
+        throw new Error('Client Has A Loan in progress!!')
+      }
+    }
+
+    let screening = yield Screening.findOne({ client: body.client })
+      .sort({ date_created: -1 })
+      .exec();
+
+    return screening;
+    
   })
 }
