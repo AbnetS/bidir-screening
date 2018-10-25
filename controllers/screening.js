@@ -26,6 +26,7 @@ const Form               = require('../models/form');
 const Section            = require('../models/section');
 const History            = require('../models/history');
 const ClientACAT         = require('../models/clientACAT');
+const Loan               = require('../models/loan');
 
 const TokenDal           = require('../dal/token');
 const ScreeningDal       = require('../dal/screening');
@@ -817,7 +818,7 @@ function validateCycle(body) {
 
     for(let acat of clientACATS) {
       if(acat.status === 'new' || acat.status === 'submitted' || acat.status === 'resubmitted' || acat.status === "inprogress") {
-        throw new Error('Client Has A Loan in progress!!')
+        throw new Error('Client Has An ACAT in progress!!')
       }
     }
 
