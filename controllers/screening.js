@@ -143,7 +143,8 @@ exports.create = function* createScreening(next) {
     yield History.findOneAndUpdate({
       client: client._id
     },{
-      $push: { screenings: newscreening._id }
+      $push: { screenings: newscreening._id },
+      $inc: { cycle_number: 1 }
     })
 
     this.body = newscreening;

@@ -18,6 +18,7 @@ var HistorySchema = new Schema({
     started_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     last_edit_by:   { type: Schema.Types.ObjectId, ref: 'User' },
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
+    cycle_number:   { type: Number, default: 1 },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -56,6 +57,7 @@ HistorySchema.statics.attributes = {
   loans: 1,
   acats: 1,
   branch: 1,
+  cycle_number: 1,
   group_loans: 1,
   date_created: 1,
   last_modified: 1,
