@@ -144,12 +144,19 @@ exports.update = function update(query, updates) {
  *
  * @return {Promise}
  */
-exports.get = function get(query, screening) {
+exports.get = function get(query, sort) {
   debug('getting screening ', query);
 
-  return Screening.findOne(query, returnFields)
-    .populate(population)
-    .exec();
+  if (sort && sort === "last") {
+    return Screening.findOne(query, returnFields)
+      .sort({ date_created: "desc" })
+      .populate(population)
+      .exec();
+  } else {
+    return Screening.findOne(query, returnFields)
+      .populate(population)
+      .exec();
+  }
 
 };
 

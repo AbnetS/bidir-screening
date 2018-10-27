@@ -690,7 +690,7 @@ exports.getClientScreening = function* getClientScreening(next) {
   };
 
   try {
-    let screening = yield ScreeningDal.get(query);
+    let screening = yield ScreeningDal.get(query, "last");
 
     yield LogDal.track({
       event: 'view_client_screening',
