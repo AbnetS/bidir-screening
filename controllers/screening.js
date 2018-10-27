@@ -140,6 +140,10 @@ exports.create = function* createScreening(next) {
     // Create Screening Type
     let newscreening = yield ScreeningDal.create(screeningBody);
 
+    yield ClientDal.update({ _id: client._id},{
+      status: "new"
+    });
+
     yield History.findOneAndUpdate({
       client: client._id
     },{
