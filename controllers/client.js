@@ -19,7 +19,8 @@ const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const googleBuckets      = require('../lib/google-buckets');
 const checkPermissions   = require('../lib/permissions');
-const FORM               = require ('../lib/enums').FORM;
+const FORM               = require('../lib/enums').FORM;
+const CBS                = require('../lib/cbs');
 
 const Account            = require('../models/account');
 const Question           = require('../models/question');
@@ -40,6 +41,79 @@ const HistoryDal         = require('../dal/history');
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
 let PREQS = [];
+let cbs = null;
+
+(async function(){
+  cbs = new CBS(config.ABACUS)
+
+  await cbs.initialize();
+})();
+
+/**
+ * Create a client.
+ *
+ * @desc create a client using basic Authentication or Social Media
+ *
+ * @param {Function} next Middleware dispatcher
+ *
+ */
+
+exports.uploadToCBS = function* uploadToCBS(next) {
+  debug('Push Client To CBS');
+
+  if (!cbs) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_TO_CBS_ERROR',
+      message: "Connection To CBS Error!"
+    }));
+  }
+
+  let body = this.request.body;
+
+  this.checkBody('client')
+      .notEmpty('Client Reference is Empty');
+  this.checkBody('branchId')
+      .notEmpty('Branch ID is Empty');
+
+  if(this.errors) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_TO_CBS_ERROR',
+      message: JSON.stringify(this.errors)
+    }));
+  }
+
+  try {
+
+    let client = yield ClientDal.get({ _id: body.client });
+    if(!client) {
+      throw new Error('Client with those details already exists!!');
+    }
+
+    if (client.status !== 'loan_granted') {
+      throw new Error('Client Has Not Been Granted A Loan!')
+    }
+
+    let imgId = yield cbs.uploadPicture(client.picture);
+    let cardId = yield cbs.uploadId(client.national_id_card);
+
+    let cbsClient = yield cbs.createClient(client, cardId, imgId, body.branchId);
+
+    yield ClientDal.update({ _id: client._id },{
+      in_cbs: true
+    })
+
+    this.body = {
+      message: "Uploaded Successfully"
+    };
+
+  } catch(ex) {
+    this.throw(new CustomError({
+      type: 'CLIENT_CREATION_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
 
 /**
  * Create a client.
@@ -510,6 +584,85 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
 };
 
 /**
+ * Get a collection of loan granted clients
+ *
+ * @desc Fetch a collection of clients
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.viewByStatus = function* viewByStatus(next) {
+  debug('get a collection of clients by pagination');
+
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+  if(!this.query.status) {
+    return this.throw(new CustomError({
+      type: 'VIEW_CLIENTS_BY_STATUS_ERROR',
+      message: "Please Provide a Status"
+    }));
+  }
+
+  // retrieve pagination query params
+  let page   = this.query.page || 1;
+  let limit  = this.query.per_page || 10;
+  let query = {
+    status: this.query.status
+  };
+
+  let sortType = this.query.sort_by;
+  let sort = {};
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
+
+  let opts = {
+    page: +page,
+    limit: +limit,
+    sort: sort
+  };
+
+  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
+
+
+  try {
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+
+    // Super Admin
+    if (!account || (account.multi_branches && canViewAll)) {
+        //query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+      }
+
+    // Can VIEW
+    } else if(canView) {
+        query.created_by = user._id;
+
+    // DEFAULT
+    } else {
+      query.created_by = user._id;
+    }
+
+    let clients = yield ClientDal.getCollectionByPagination(query, opts);
+
+    this.body = clients;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'VIEW_CLIENTS_BY_STATUS_ERROR',
+      message: ex.message
+    }));
+  }
+};
+
+
+/**
  * Remove a single client.
  *
  * @desc Fetch a client with the given id from the database
@@ -708,6 +861,8 @@ exports.getClientScreening = function* getClientScreening(next) {
   }
 
 };
+
+
 
 // Utilities
 function createQuestion(question) {
