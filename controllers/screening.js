@@ -144,12 +144,26 @@ exports.create = function* createScreening(next) {
       status: "new"
     });
 
-    yield History.findOneAndUpdate({
-      client: client._id
-    },{
-      $push: { screenings: newscreening._id },
-      $inc: { cycle_number: 1 }
-    })
+    let history = yield History.findOne({client: client._id}).exec()
+    if (history) {
+      let cycleNumber = history.cycle_number + 1;
+
+      yield History.findOneAndUpdate({
+        _id: history._id
+      },{
+        $set: {
+          cycle_number: cycleNumber,
+        },
+        $push: {
+          cycles: {
+            cycle_number: cycleNumber,
+            started_by: this.state._user._id,
+            last_edit_by: this.state._user._id,
+            screening: newscreening._id
+          }
+        }
+      })
+    }
 
     this.body = newscreening;
 
@@ -796,7 +810,7 @@ function validateCycle(body) {
       .sort({ date_created: -1 })
       .exec();
     if(!screenings.length) {
-      throw new Error('Client Has Not Screening Form Yet!');
+      throw new Error('Client Has No Screening Form Yet!');
     }
 
     for(let screening of screenings) {

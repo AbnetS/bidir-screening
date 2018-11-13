@@ -10,13 +10,8 @@ var paginator = require('mongoose-paginate');
 var Schema = mongoose.Schema;
 
 var HistorySchema = new Schema({       
-    client:        { type: Schema.Types.ObjectId, ref: 'Client'},
-    screenings:     [{ type: Schema.Types.ObjectId, ref: 'Screening'}],
-    loans:          [{ type: Schema.Types.ObjectId, ref: 'Loan'}],
-    acats:          [{ type: Schema.Types.ObjectId, ref: 'ClientACAT'}],
-    group_loans:    [{ type: Schema.Types.ObjectId, ref: "GroupLoan"}],
-    started_by:     { type: Schema.Types.ObjectId, ref: 'User' },
-    last_edit_by:   { type: Schema.Types.ObjectId, ref: 'User' },
+    client:         { type: Schema.Types.ObjectId, ref: 'Client'},
+    cycles:         [{ type: Schema.Types.Mixed }],
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     cycle_number:   { type: Number, default: 1 },
     date_created:   { type: Date },
@@ -51,14 +46,9 @@ HistorySchema.pre('save', function preSaveMiddleware(next) {
  */
 HistorySchema.statics.attributes = {
   client: 1,
-  screenings: 1,
-  started_by: 1,
-  last_edit_by: 1,
-  loans: 1,
-  acats: 1,
   branch: 1,
   cycle_number: 1,
-  group_loans: 1,
+  cycles: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1

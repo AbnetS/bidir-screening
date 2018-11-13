@@ -74,6 +74,8 @@ exports.uploadToCBS = function* uploadToCBS(next) {
       .notEmpty('Client Reference is Empty');
   this.checkBody('branchId')
       .notEmpty('Branch ID is Empty');
+  this.checkBody('title')
+      .notEmpty('Client Title is Empty');
 
   if(this.errors) {
     return this.throw(new CustomError({
@@ -96,7 +98,13 @@ exports.uploadToCBS = function* uploadToCBS(next) {
     let imgId = yield cbs.uploadPicture(client.picture);
     let cardId = yield cbs.uploadId(client.national_id_card);
 
-    let cbsClient = yield cbs.createClient(client, cardId, imgId, body.branchId);
+    let cbsClient = yield cbs.createClient({
+      client: client,
+      cardId: cardId,
+      imgId: imgId,
+      branchId: body.branchId,
+      title: body.title
+    });
 
     yield ClientDal.update({ _id: client._id },{
       in_cbs: true
@@ -321,10 +329,14 @@ exports.create = function* createClient(next) {
     // start history tracking
     yield HistoryDal.create({
       client: client._id,
-      started_by: this.state._user._id,
-      last_edit_by: this.state._user._id,
-      screenings: [screening._id],
-      branch: client.branch._id
+      cycles: [{
+        started_by: this.state._user._id,
+        last_edit_by: this.state._user._id,
+        screening: screening._id,
+        cycle_number: 1
+      }],
+      branch: client.branch._id,
+      cycle_number: 1
     })
 
     this.body = client;
