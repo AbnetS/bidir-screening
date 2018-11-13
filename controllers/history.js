@@ -19,10 +19,15 @@ const CustomError        = require('../lib/custom-error');
 const checkPermissions   = require('../lib/permissions');
 
 const Account            = require('../models/account');
+const Client       = require('../models/client');
+const Screening    = require('../models/screening');
+const Loan         = require('../models/loan');
+const ClientACAT    = require('../models/clientACAT');
 
 const TokenDal           = require('../dal/token');
 const HistoryDal          = require('../dal/history');
 const LogDal             = require('../dal/log');
+const UserDal             = require('../dal/user');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
@@ -42,6 +47,14 @@ exports.fetchOne = function* fetchOneHistory(next) {
 
   try {
     let history = yield HistoryDal.get(query);
+    if (!history || history._id) {
+      throw new Error("Not Found")
+    }
+
+    history = history.toJSON();
+    let cycles = yield populateHistory(history);
+
+    history.cycles = cycles;
 
     yield LogDal.track({
       event: 'view_history',
@@ -111,6 +124,11 @@ exports.fetchAllByPagination = function* fetchAllHistorys(next) {
 
     let histories = yield HistoryDal.getCollectionByPagination(query, opts);
 
+    for(let history of histories.docs) {
+      let cycles = yield populateHistory(history)
+      history.cycles = cycles
+    }
+
     this.body = histories;
     
   } catch(ex) {
@@ -120,3 +138,29 @@ exports.fetchAllByPagination = function* fetchAllHistorys(next) {
     }));
   }
 };
+
+function populateHistory(history) {
+ return co(function* (){
+    let cycles = [];
+
+    for(let cycle of history.cycles) {
+      let loan = yield Loan.findOne({ _id: cycle.loan }).exec();
+      let screening = yield Screening.findOne({ _id: cycle.screening }).exec();
+      let acat = yield ClientACAT.findOne({ _id: cycle.acat }).exec();
+      let starter = yield UserDal.get({ _id: cycle.started_by });
+      let editor = yield UserDal.get({ _id: cycle.last_edit_by });
+
+
+      cycles.push({
+        loan: (loan && loan._id) ? loan.toJSON() : {},
+        acat: (acat && acat._id) ? acat.toJSON() : {},
+        screening: (screening && screening._id) ? screening.toJSON() : {},
+        cycle_number: cycle.cycle_number,
+        started_by: (starter && starter._id) ? starter.toJSON() : {},
+        last_edit_by: (editor && editor._id) ? editor.toJSON() : {}
+      })
+    }
+
+    return cycles;
+ })
+}
