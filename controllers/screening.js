@@ -153,6 +153,7 @@ exports.create = function* createScreening(next) {
       },{
         $set: {
           cycle_number: cycleNumber,
+          last_modified:  moment().toISOString()
         },
         $push: {
           cycles: {
@@ -162,7 +163,7 @@ exports.create = function* createScreening(next) {
             screening: newscreening._id
           }
         }
-      })
+      }).exec()
     }
 
     this.body = newscreening;
