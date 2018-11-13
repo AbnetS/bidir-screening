@@ -74,6 +74,33 @@ exports.create = function* createScreening(next) {
 
     let screening = yield validateCycle(body);
 
+    let history = yield History.findOne({client: client._id}).exec()
+    if (!history) {
+      throw new Error('Client Has No Loan History');
+
+    } else {
+      history = history.toJSON();
+
+      let cycleOk = true;
+      let whichCycle;
+      let missingApplications = [];
+
+      for(let cycle of history.cycles) {
+        if (!cycle.acat || !cycle.loan || !cycle.screening) {
+          !cycle.screening ? missingApplications.push('Screening') : null;
+          !cycle.loan ? missingApplications.push('Loan'): null;
+          !cycle.acat ? missingApplications.push('ACAT'): null;
+          cycleOk = false;
+          whichCycle = cycle.cycle_number;
+          break;
+        }
+      }
+
+      if (!cycleOk) {
+        throw new Error(`Loan Cycle (${whichCycle}) is in progress. Missing ${missingApplications.join(',')} Application(s)`);
+      }
+    }
+
     let screeningBody = {};
     let questions = [];
     let sections = [];
@@ -144,7 +171,7 @@ exports.create = function* createScreening(next) {
       status: "new"
     });
 
-    let history = yield History.findOne({client: client._id}).exec()
+    
     if (history) {
       let cycleNumber = history.cycle_number + 1;
 
