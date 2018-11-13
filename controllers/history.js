@@ -47,7 +47,7 @@ exports.fetchOne = function* fetchOneHistory(next) {
 
   try {
     let history = yield HistoryDal.get(query);
-    if (!history || history._id) {
+    if (!history || !history._id) {
       throw new Error("Not Found")
     }
 
