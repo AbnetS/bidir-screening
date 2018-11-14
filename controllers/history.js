@@ -73,13 +73,24 @@ exports.search = function* searchHistory(next) {
 
 
     if (this.query.loanCycle) {
+
       let num = +this.query.loanCycle;
 
       let cycle = _.find(history.cycles, { cycle_number: num })
 
-      this.body = cycle || {};
+      if (this.query.application === "acat") {
+        this.body = cycle.acat ? cycle.acat : {}
+      } else if (this.query.application === "loan") {
+        this.body = cycle.loan ? cycle.loan : {}
+      } else if (this.query.application === "screening") {
+        this.body = cycle.screening ? cycle.screening : {}
+      } else {
+        this.body = cycle || {};
+      }
+
     } else {
       this.body = history;
+
     }
 
   } catch(ex) {
