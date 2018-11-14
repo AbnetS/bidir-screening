@@ -23,11 +23,12 @@ var LoanSchema = new Schema({
     sections:       [{ type: Schema.Types.ObjectId, ref: 'Section' }],
     signatures:     [{ type: String }],
     disclaimer:     { type: String, default: '' },
-    questions:      [{ type: Schema.Types.ObjectId, ref: 'Answer'}],
+    questions:      [{ type: Schema.Types.ObjectId, ref: 'Question'}],
     created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     client:         { type: Schema.Types.ObjectId, ref: 'Client' },
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     status:         { type: String, default: 'new' },
+    comment:        { type: String, default: '' },
     date_created:   { type: Date },
     last_modified:  { type: Date }
 });
@@ -75,6 +76,7 @@ LoanSchema.statics.attributes = {
   client: 1,
   status: 1,
   branch: 1,
+  comment: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1

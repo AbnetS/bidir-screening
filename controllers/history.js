@@ -28,8 +28,68 @@ const TokenDal           = require('../dal/token');
 const HistoryDal          = require('../dal/history');
 const LogDal             = require('../dal/log');
 const UserDal             = require('../dal/user');
+const ClientDal       = require('../dal/client');
+const ScreeningDal    = require('../dal/screening');
+const LoanDal         = require('../dal/loan');
+const ClientACATDal    = require('../dal/clientACAT');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
+
+/**
+ * Search history.
+ *
+ * @desc Fetch a history with the given id from the database.
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.search = function* searchHistory(next) {
+  debug(`search history`);
+
+  try {
+    if (!this.query.client) {
+      throw new Error('Client Reference Missing in query');
+    }
+
+    let query = {
+      client: this.query.client
+    };
+
+    let history = yield HistoryDal.get(query);
+    if (!history || !history._id) {
+      throw new Error("Client Loan Cycle History Not Found")
+    }
+
+    yield LogDal.track({
+      event: 'view_history',
+      history: this.state._user._id ,
+      message: `View history - ${history._id}`
+    });
+
+    history = history.toJSON();
+
+    let cycles = yield populateHistory(history);
+
+    history.cycles = cycles;
+
+
+    if (this.query.loanCycle) {
+      let num = +this.query.loanCycle;
+
+      let cycle = _.find(history.cycles, { cycle_number: num })
+
+      this.body = cycle || {};
+    } else {
+      this.body = history;
+    }
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'HISTORY_RETRIEVAL_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
 
 /**
  * Get a single history.
@@ -122,6 +182,10 @@ exports.fetchAllByPagination = function* fetchAllHistorys(next) {
       }
     }
 
+    if (this.query.loanCycle) {
+      query.cycle_number = +this.query.loanCycle;
+    }
+
     let histories = yield HistoryDal.getCollectionByPagination(query, opts);
 
     for(let history of histories.docs) {
@@ -144,9 +208,9 @@ function populateHistory(history) {
     let cycles = [];
 
     for(let cycle of history.cycles) {
-      let loan = yield Loan.findOne({ _id: cycle.loan }).exec();
-      let screening = yield Screening.findOne({ _id: cycle.screening }).exec();
-      let acat = yield ClientACAT.findOne({ _id: cycle.acat }).exec();
+      let loan = yield LoanDal.get({ _id: cycle.loan });
+      let screening = yield ScreeningDal.get({ _id: cycle.screening });
+      let acat = yield ClientACATDal.get({ _id: cycle.acat });
       let starter = yield UserDal.get({ _id: cycle.started_by });
       let editor = yield UserDal.get({ _id: cycle.last_edit_by });
 

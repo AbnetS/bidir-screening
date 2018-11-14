@@ -95,28 +95,39 @@ exports.uploadToCBS = function* uploadToCBS(next) {
       throw new Error('Client Has Not Been Granted A Loan!')
     }
 
-    let imgId = yield cbs.uploadPicture(client.picture);
-    let cardId = yield cbs.uploadId(client.national_id_card);
+    try {
+      let imgId = yield cbs.uploadPicture(client.picture);
+      let cardId = yield cbs.uploadId(client.national_id_card);
 
-    let cbsClient = yield cbs.createClient({
-      client: client,
-      cardId: cardId,
-      imgId: imgId,
-      branchId: body.branchId,
-      title: body.title
-    });
+      let cbsClient = yield cbs.createClient({
+        client: client,
+        cardId: cardId,
+        imgId: imgId,
+        branchId: body.branchId,
+        title: body.title
+      });
 
-    yield ClientDal.update({ _id: client._id },{
-      in_cbs: true
-    })
+      yield ClientDal.update({ _id: client._id },{
+        cbs_status: "ACCEPTED",
+        cbs_status_message: "Success"
+      })
 
+    } catch(ex) {
+      yield ClientDal.update({ _id: client._id },{
+        cbs_status: "DENIED",
+        cbs_status_message: ex.message
+      })
+
+      throw ex;
+    }
+    
     this.body = {
       message: "Uploaded Successfully"
     };
 
   } catch(ex) {
     this.throw(new CustomError({
-      type: 'CLIENT_CREATION_ERROR',
+      type: 'CLIENT_TO_CBS_ERROR',
       message: ex.message
     }));
   }

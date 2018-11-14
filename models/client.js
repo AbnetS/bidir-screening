@@ -42,7 +42,8 @@ var ClientSchema = new Schema({
   household_members_count: { type: String, default: "0" },
   status:         { type: String, default: 'new' },
   date_created:   { type: Date },
-  cbs_status:         { type: String, default: "NONE" },
+  cbs_status:         { type: String, default: "NO ATTEMPT" },
+  cbs_status_message: { type: String, default: "None"},
   last_modified:  { type: Date }
 });
 
@@ -71,6 +72,7 @@ ClientSchema.statics.attributes = {
   geolocation: 1,
   status: 1,
   cbs_status: 1,
+  cbs_status_message: 1,
   date_created:   1,
   last_modified:  1,
   _id: 1
