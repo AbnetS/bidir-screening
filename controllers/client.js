@@ -350,6 +350,10 @@ exports.create = function* createClient(next) {
       cycle_number: 1
     })
 
+    yield ClientDal.update({ _id: client._id },{
+      loan_cycle_number: 1
+    })
+
     this.body = client;
 
   } catch(ex) {

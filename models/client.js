@@ -44,6 +44,7 @@ var ClientSchema = new Schema({
   date_created:   { type: Date },
   cbs_status:         { type: String, default: "NO ATTEMPT" },
   cbs_status_message: { type: String, default: "None"},
+  loan_cycle_number:  { type: Number, default: 0 },
   last_modified:  { type: Date }
 });
 
@@ -73,6 +74,7 @@ ClientSchema.statics.attributes = {
   status: 1,
   cbs_status: 1,
   cbs_status_message: 1,
+  loan_cycle_number: 1,
   date_created:   1,
   last_modified:  1,
   _id: 1

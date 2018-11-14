@@ -168,7 +168,8 @@ exports.create = function* createScreening(next) {
     let newscreening = yield ScreeningDal.create(screeningBody);
 
     yield ClientDal.update({ _id: client._id},{
-      status: "new"
+      status: "new",
+      loan_cycle_number: client.loan_cycle_number + 1
     });
 
     
