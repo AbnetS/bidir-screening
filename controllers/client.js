@@ -647,6 +647,24 @@ exports.viewByStatus = function* viewByStatus(next) {
 
   try {
     let user = this.state._user;
+    if (this.query.loanCycle) {
+      // retrieve histories
+      let qry = {
+        cycle_number: +this.query.loanCycle
+      };
+
+      let histories = yield HistoryDal.getCollectionByPagination(qry, opts);
+      let ids = [];
+
+      for(let history of histories.docs) {
+        ids.push(history.client._id)
+      }
+
+      query._id = {
+        $in: ids.slice()
+      }
+    }
+
     let account = yield Account.findOne({ user: user._id }).exec();
 
     // Super Admin
@@ -671,6 +689,8 @@ exports.viewByStatus = function* viewByStatus(next) {
     } else {
       query.created_by = user._id;
     }
+
+    console.log(query)
 
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
