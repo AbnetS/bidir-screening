@@ -13,7 +13,7 @@ const _          = require('lodash');
 const co         = require('co');
 const del        = require('del');
 const validator  = require('validator');
-const fs         = require('fs-extra')
+const fs         = require('fs-extra');
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
