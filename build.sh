@@ -21,7 +21,7 @@ $DOCKER_PATH run -d \
   -p $HOST:$EXPOSE_PORT:$CONT_PORT \
   -e HOST=$HOST_IP \
   -e MONGODB_URL=$MONGODB_URL \
-  -v ~/B_Assets=/usr/src/app/assets \
+  -v ~/assets=/usr/src/app/assets \
   --restart=always \
   $IMAGE_TAG
 
