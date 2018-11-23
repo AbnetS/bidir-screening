@@ -850,6 +850,11 @@ exports.search = function* searchClients(next) {
         email: groupTerms
       });
 
+    if (this.query.loanCycle) {
+      query.$or.push({
+        loan_cycle_number: +this.query.loanCycle
+      })
+    }
    
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
