@@ -777,11 +777,6 @@ exports.search = function* searchClients(next) {
     let account = yield Account.findOne({ user: user._id }).exec();
     let query = {};
 
-    let searchTerm = this.query.search;
-    if(!searchTerm) {
-      throw new Error('Please Provide A Search Term');
-    }
-
     // Super Admin
     if (!account || (account.multi_branches && canViewAll)) {
         query = {};
@@ -809,51 +804,53 @@ exports.search = function* searchClients(next) {
         };
     }
 
-    query.$or = [];
+    if (this.query.loanCycle) {
+        query.loan_cycle_number = +this.query.loanCycle
 
-    let terms = searchTerm.split(/\s+/);
-    let groupTerms = { $in: [] };
+    } else if (this.query.searchTerm) {
+      query.$or = [];
 
-    for(let term of terms) {
-      if(validator.isMongoId(term)) {
-        throw new Error('IDs are not supported for Search');
+      let terms = searchTerm.split(/\s+/);
+      let groupTerms = { $in: [] };
+
+      for(let term of terms) {
+        if(validator.isMongoId(term)) {
+          throw new Error('IDs are not supported for Search');
+        }
+
+        term = new RegExp(`${term}`, 'i')
+
+        groupTerms.$in.push(term);
       }
 
-      term = new RegExp(`${term}`, 'i')
-
-      groupTerms.$in.push(term);
-    }
-
-    query.$or.push({
-        gender: groupTerms
-      },{
-        first_name: groupTerms
-      },{
-        last_name: groupTerms
-      },{
-        national_id_no: groupTerms
-      },{
-        woreda: groupTerms
-      },{
-        kebele: groupTerms
-      },{
-        house_no: groupTerms
-      },{
-        phone: groupTerms
-      },{
-        household_members_count: groupTerms
-      },{
-        status: groupTerms
-      },{
-        civil_status: groupTerms
-      },{
-        email: groupTerms
-      });
-
-    if (this.query.loanCycle) {
       query.$or.push({
-        loan_cycle_number: +this.query.loanCycle
-      })
+          gender: groupTerms
+        },{
+          first_name: groupTerms
+        },{
+          last_name: groupTerms
+        },{
+          national_id_no: groupTerms
+        },{
+          woreda: groupTerms
+        },{
+          kebele: groupTerms
+        },{
+          house_no: groupTerms
+        },{
+          phone: groupTerms
+        },{
+          household_members_count: groupTerms
+        },{
+          status: groupTerms
+        },{
+          civil_status: groupTerms
+        },{
+          email: groupTerms
+        });
+
+    } else {
+      throw new Error("Please Provide Either ?searchTerm= or ?loanCycle=")
     }
    
     let clients = yield ClientDal.getCollectionByPagination(query, opts);

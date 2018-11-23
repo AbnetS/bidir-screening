@@ -169,7 +169,7 @@ exports.create = function* createScreening(next) {
 
     yield ClientDal.update({ _id: client._id},{
       status: "new",
-      loan_cycle_number: client.loan_cycle_number + 1
+      loan_cycle_number: (client.loan_cycle_number + 1)
     });
 
     
