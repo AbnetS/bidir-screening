@@ -156,6 +156,61 @@ router.post('/create', acl('*'), clientController.create);
  */
 router.post('/cbs', acl('*'), clientController.uploadToCBS);
 
+/**
+ * @api {post} /screening/clients/cbs/bulk BulkUpload to CBS
+ * @apiVersion 1.0.0
+ * @apiName BulkUploadToCBS
+ * @apiGroup Client
+ *
+ * @apiDescription Upload Client To CBS
+ *
+ * @apiParam {String} client Client Id
+ * @apiParam {String} branchId CBS Supplied Branch ID
+ *
+ * @apiParamExample Request Example:
+ *  [{
+ *    branchId: 1,
+ *    client : "556e1174a8952c9521286a60"
+ *  }]
+ *
+ * @apiSuccess {String} message Message
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    message: "uploaded successfully",
+ *  }
+ *
+ */
+router.post('/cbs/bulk', acl('*'), clientController.uploadBulkToCBS);
+
+/**
+ * @api {post} /screening/clients/cbs/connect Connect to CBS
+ * @apiVersion 1.0.0
+ * @apiName BulkUploadToCBS
+ * @apiGroup Client
+ *
+ * @apiDescription Upload Client To CBS
+ *
+ * @apiParam {String} client Client Id
+ * @apiParam {String} branchId CBS Supplied Branch ID
+ *
+ * @apiParamExample Request Example:
+ *  [{
+ *    branchId: 1,
+ *    client : "556e1174a8952c9521286a60"
+ *  }]
+ *
+ * @apiSuccess {String} message Message
+ *
+ * @apiSuccessExample Response Example:
+ *  {
+ *    message: "uploaded successfully",
+ *  }
+ *
+ */
+router.post('/cbs/bulk', acl('*'), clientController.uploadBulkToCBS);
+
+
 
 /**
  * @api {get} /screening/clients/paginate?page=<RESULTS_PAGE>&per_page=<RESULTS_PER_PAGE> Get clients collection

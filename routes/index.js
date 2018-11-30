@@ -11,6 +11,7 @@ const clientRouter      = require('./client');
 const questionRouter      = require('./question');
 const screeningRouter   = require('./screening');
 const historyRouter   = require('./history');
+const cbsRouter   = require('./cbs');
 
 var appRouter = new Router();
 
@@ -32,6 +33,8 @@ composeRoute('screenings/clients', clientRouter);
 composeRoute('screenings/questions', questionRouter);
 //Add History Router
 composeRoute('screenings/histories', historyRouter);
+//Add History Router
+composeRoute('screenings/cbs', cbsRouter);
 
 function composeRoute(endpoint, router){
   appRouter.use(`/${endpoint}`, router.routes(), router.allowedMethods());

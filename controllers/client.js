@@ -37,17 +37,157 @@ const AccountDal         = require('../dal/account');
 const QuestionDal        = require('../dal/question');
 const SectionDal         = require('../dal/section');
 const HistoryDal         = require('../dal/history');
+const ACATConfigDal      = require('../dal/ACATConfig');
 
 let hasPermission = checkPermissions.isPermitted('CLIENT');
 
 let PREQS = [];
 let cbs = null;
 
-(async function(){
-  cbs = new CBS(config.ABACUS)
+exports.connectToCBS = function* connectToCBS(next){
+  debug('connect to CBS')
 
-  await cbs.initialize();
-})();
+  try {
+    let ACATConfig = yield ACATConfigDal.get({})
+    if (!ACATConfig) {
+      ACATConfig = yield ACATConfigDal.create({})
+    }
+
+    cbs = new CBS(ACATConfig.cbs)
+
+    yield cbs.initialize();
+
+    this.body = {
+      message: "Connected Successfully"
+    }
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'CONNECT_TO_CBS_ERROR',
+      message: ex.message
+    }));
+  }
+}
+
+exports.updateCBSCOnfig = function* updateCBSCOnfig(next){
+  debug('update CBS Config')
+
+  let body = this.request.body;
+
+
+  try {
+    let ACATConfig = yield ACATConfigDal.get({})
+    if (!ACATConfig) {
+      ACATConfig = yield ACATConfigDal.create({})
+    }
+
+    let data = {
+      cbs: body
+    }
+
+    ACATConfig = yield ACATConfigDal.update({ _id: ACATConfig._id}, data)
+
+    this.body =  ACATConfig;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'UPDATE_CBS_CONFIG_ERROR',
+      message: ex.message
+    }));
+  }
+}
+
+/**
+ * Create a client.
+ *
+ * @desc create a client using basic Authentication or Social Media
+ *
+ * @param {Function} next Middleware dispatcher
+ *
+ */
+
+exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
+  debug('Push Clients To CBS');
+
+  if (!cbs.connected) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_TO_CBS_ERROR',
+      message: cbs.connection_err || "Connection To CBS Error!"
+    }));
+  }
+
+  let body = this.request.body;
+
+  try {
+    if (!Array.isArray(body)) {
+      throw new Error('Expected An List of clients to CBS');
+    }
+
+    let items = body.slice();
+    for(let item of items) {
+      body = item;
+      this.checkBody('client')
+          .notEmpty('Client Reference is Empty');
+      this.checkBody('branchId')
+          .notEmpty('Branch ID is Empty');
+      this.checkBody('title')
+          .notEmpty('Client Title is Empty');
+
+      if(this.errors) {
+        return this.throw(new CustomError({
+          type: 'CLIENTS_TO_CBS_ERROR',
+          message: JSON.stringify(this.errors)
+        }));
+      }
+
+      let client = yield ClientDal.get({ _id: body.client });
+      if(!client) {
+        throw new Error(`Client ${body.client} does not exists!!`);
+      }
+
+      if (client.status !== 'loan_granted') {
+        throw new Error(`Client ${body.client} Has Not Been Granted A Loan!`)
+      }
+
+      try {
+        let imgId = yield cbs.uploadPicture(client.picture);
+        let cardId = yield cbs.uploadId(client.national_id_card);
+
+        let cbsClient = yield cbs.createClient({
+          client: client,
+          cardId: cardId,
+          imgId: imgId,
+          branchId: body.branchId,
+          title: body.title
+        });
+
+        yield ClientDal.update({ _id: client._id },{
+          cbs_status: "ACCEPTED",
+          cbs_status_message: "Success"
+        })
+
+      } catch(ex) {
+        yield ClientDal.update({ _id: client._id },{
+          cbs_status: "DENIED",
+          cbs_status_message: ex.message
+        })
+
+        throw ex;
+      }
+    }
+
+    this.body = {
+      message: "Uploaded Successfully"
+    };
+
+  } catch(ex) {
+    this.throw(new CustomError({
+      type: 'CLIENTS_TO_CBS_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
 
 /**
  * Create a client.
@@ -530,11 +670,10 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
     sort: sort
   };
 
-  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
-  let canView =  yield hasPermission(this.state._user, 'VIEW');
-
 
   try {
+    let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+    let canView =  yield hasPermission(this.state._user, 'VIEW');
     let user = this.state._user;
     let account = yield Account.findOne({ user: user._id }).exec();
 
