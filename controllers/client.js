@@ -631,20 +631,6 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   let limit  = this.query.per_page || 10;
   let query = {};
 
-  /*if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
-    return this.throw(new CustomError({
-      type: 'VIEW_CLIENTS_COLLECTION_ERROR',
-      message: 'Query Source should be either web or app'
-    }));
-  }
-
-  if(this.query.source == 'web' && !isPermitted) {
-    return this.throw(new CustomError({
-      type: 'VIEW_CLIENTS_COLLECTION_ERROR',
-      message: "You Don't have enough permissions to complete this action"
-    }));
-  }*/
-
   let sortType = this.query.sort_by;
   let sort = {};
   sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
@@ -689,37 +675,6 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
         };
     }
 
-    /*if(this.query.source == 'app') {
-      if(!account) {
-        throw new Error('Please View Using Web!!');
-      }
-      
-      if(!account.multi_branch) {
-        query = {
-          created_by: user._id
-        };
-      } else if(canViewAll) {
-        if(account.access_branches.length) {
-          query.access_branches = { $in: account.access_branches };
-
-        } else if(account.default_branch) {
-          query.default_branch = account.default_branch;
-
-        }
-      }
-
-    } else if(this.query.source == 'web') {
-      if(!account.multi_branch) {
-        if(account.access_branches.length) {
-          query.access_branches = { $in: account.access_branches };
-
-        } else if(account.default_branch) {
-          query.default_branch = account.default_branch;
-
-        }
-      }
-    }
-*/
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
     this.body = clients;
@@ -931,6 +886,12 @@ exports.search = function* searchClients(next) {
     if (this.query.loanCycle) {
         query.loan_cycle_number = +this.query.loanCycle
 
+    } else if (this.query.status) {
+        query.status = this.query.status
+
+     } else if (this.query.cbs_status) {
+        query.cbs_status = this.query.cbs_status
+
     } else if (this.query.searchTerm) {
       query.$or = [];
 
@@ -971,6 +932,8 @@ exports.search = function* searchClients(next) {
           civil_status: groupTerms
         },{
           email: groupTerms
+        },{
+          cbs_status: groupTerms
         });
 
     } else {
