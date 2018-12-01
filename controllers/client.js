@@ -125,28 +125,13 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
 
     let items = body.slice();
     for(let item of items) {
-      body = item;
-      this.checkBody('client')
-          .notEmpty('Client Reference is Empty');
-      this.checkBody('branchId')
-          .notEmpty('Branch ID is Empty');
-      this.checkBody('title')
-          .notEmpty('Client Title is Empty');
-
-      if(this.errors) {
-        return this.throw(new CustomError({
-          type: 'CLIENTS_TO_CBS_ERROR',
-          message: JSON.stringify(this.errors)
-        }));
-      }
-
-      let client = yield ClientDal.get({ _id: body.client });
+      let client = yield ClientDal.get({ _id: item.client });
       if(!client) {
-        throw new Error(`Client ${body.client} does not exists!!`);
+        throw new Error(`Client ${item.client} does not exists!!`);
       }
 
       if (client.status !== 'loan_granted') {
-        throw new Error(`Client ${body.client} Has Not Been Granted A Loan!`)
+        throw new Error(`Client ${item.client} Has Not Been Granted A Loan!`)
       }
 
       try {
@@ -157,8 +142,8 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
           client: client,
           cardId: cardId,
           imgId: imgId,
-          branchId: body.branchId,
-          title: body.title
+          branchId: item.branchId,
+          title: item.title
         });
 
         yield ClientDal.update({ _id: client._id },{
