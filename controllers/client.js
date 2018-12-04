@@ -883,16 +883,9 @@ exports.search = function* searchClients(next) {
         };
     }
 
-    if (this.query.loanCycle) {
-        query.loan_cycle_number = +this.query.loanCycle
+    
 
-    } else if (this.query.status) {
-        query.status = this.query.status
-
-     } else if (this.query.cbs_status) {
-        query.cbs_status = this.query.cbs_status
-
-    } else if (this.query.searchTerm) {
+    if (this.query.searchTerm) {
       query.$or = [];
 
       let terms = searchTerm.split(/\s+/);
@@ -937,9 +930,39 @@ exports.search = function* searchClients(next) {
         });
 
     } else {
-      throw new Error("Please Provide Either ?searchTerm= or ?loanCycle=")
+      let qsKeys = Object.keys(this.query)
+      if (!qsKeys.length) {
+        throw new Error("Please Provide Search Terms")
+      }
+
+      for(let key of qsKeys) {
+        query[key] = query[key] || {
+          $in: []
+        };
+        let vals = this.query[key];
+
+
+        if (key == "loan_cycle_number") {
+          let nums = Array.isArray(vals) ? vals.map(function iter(item){
+            return +item
+          }) : [+vals]
+
+          query.loan_cycle_number = {
+            $in: nums.slice()
+          }
+
+        } else {
+          let values = Array.isArray(vals) ? vals.slice() : [vals]
+
+          query[key] = {
+            $in: values.slice()
+          }
+          
+        }
+      }
+
     }
-   
+  
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
 
     this.body = clients;
