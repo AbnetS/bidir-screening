@@ -222,13 +222,13 @@ exports.uploadToCBS = function* uploadToCBS(next) {
     }
 
     try {
-      let imgId = yield cbs.uploadPicture(client.picture);
-      let cardId = yield cbs.uploadId(client.national_id_card);
+      //let imgId = yield cbs.uploadPicture(client.picture);
+      //let cardId = yield cbs.uploadId(client.national_id_card);
 
       let cbsClient = yield cbs.createClient({
         client: client,
-        cardId: cardId,
-        imgId: imgId,
+        cardId: "",
+        imgId: "",
         branchId: body.branchId,
         title: body.title
       });
