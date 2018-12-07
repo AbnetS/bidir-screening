@@ -136,13 +136,21 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
       }
 
       try {
-        //let imgId = yield cbs.uploadPicture(client.picture);
-        //let cardId = yield cbs.uploadId(client.national_id_card);
+        let imgId = "";
+      let cardId = "";
+
+      if (client.picture) {
+        imgId = yield cbs.uploadPicture(client.picture);
+      }
+
+      if (client.national_id_card) {
+        cardId = yield cbs.uploadId(client.national_id_card);
+      }
 
         let cbsClient = yield cbs.createClient({
           client: client,
-          cardId: "",
-          imgId: "",
+          cardId: cardId,
+          imgId: imgId,
           branchId: item.branchId,
           title: item.title
         });
@@ -167,6 +175,7 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
     };
 
   } catch(ex) {
+    
     this.throw(new CustomError({
       type: 'CLIENTS_TO_CBS_ERROR',
       message: ex.message
@@ -214,7 +223,7 @@ exports.uploadToCBS = function* uploadToCBS(next) {
 
     let client = yield ClientDal.get({ _id: body.client });
     if(!client) {
-      throw new Error('Client with those details already exists!!');
+      throw new Error('Client with those details does not exists!!');
     }
 
     if (client.status !== 'loan_granted') {
@@ -222,13 +231,24 @@ exports.uploadToCBS = function* uploadToCBS(next) {
     }
 
     try {
-      //let imgId = yield cbs.uploadPicture(client.picture);
-      //let cardId = yield cbs.uploadId(client.national_id_card);
+      let imgId = 0;
+      let cardId = 0;
+
+      if (client.picture) {
+        imgId = yield cbs.uploadPicture(client.picture);
+        imgId = imgId.pictureId
+      }
+
+      if (client.national_id_card) {
+        cardId = yield cbs.uploadId(client.national_id_card);
+        cardId = cardId.pictureId
+      }
+      
 
       let cbsClient = yield cbs.createClient({
         client: client,
-        cardId: "",
-        imgId: "",
+        cardId: cardId,
+        imgId: imgId,
         branchId: body.branchId,
         title: body.title
       });
