@@ -343,7 +343,7 @@ exports.create = function* createClient(next) {
       yield fs.move(body.national_id_card.path, `./assets/${assetName}`)
       yield fs.remove(body.national_id_card.path);
       
-      body.national_id_card = config.ENV === 'development' ? `${config.ASSETS.DEV}${assetName}` : `${config.ASSETS.PROD}${assetName}`
+      body.national_id_card = `${config.ASSETS.DEV}${assetName}`
 
       /*try {
         let url       = yield googleBuckets(body.national_id_card.path, assetName);
@@ -362,8 +362,8 @@ exports.create = function* createClient(next) {
 
       yield fs.move(body.picture.path, `./assets/${assetName}`)
       yield fs.remove(body.picture.path);
-      
-      body.picture = config.ENV === 'development' ? `${config.ASSETS.DEV}${assetName}` : `${config.ASSETS.PROD}${assetName}`
+
+      body.picture = `${config.ASSETS.DEV}${assetName}`
 
       /*try {
         let url       = yield googleBuckets(body.picture.path, assetName);
