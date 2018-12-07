@@ -14,6 +14,7 @@ const co         = require('co');
 const del        = require('del');
 const validator  = require('validator');
 const fs         = require('fs-extra');
+const request    = require('request-promise');
 
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
@@ -135,13 +136,13 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
       }
 
       try {
-        let imgId = yield cbs.uploadPicture(client.picture);
-        let cardId = yield cbs.uploadId(client.national_id_card);
+        //let imgId = yield cbs.uploadPicture(client.picture);
+        //let cardId = yield cbs.uploadId(client.national_id_card);
 
         let cbsClient = yield cbs.createClient({
           client: client,
-          cardId: cardId,
-          imgId: imgId,
+          cardId: "",
+          imgId: "",
           branchId: item.branchId,
           title: item.title
         });
@@ -560,6 +561,102 @@ exports.updateStatus = function* updateClient(next) {
   } catch(ex) {
     return this.throw(new CustomError({
       type: 'CLIENT_STATUS_UPDATE_ERROR',
+      message: ex.message
+    }));
+
+  }
+
+};
+
+
+/**
+ * Update a single client geolocation.
+ *
+ * @desc Fetch a client with the given id from the database
+ *       and update their data
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.updateGeolocation = function* updateGeolocation(next) {
+  debug(`updating client: ${this.params.id}`);
+
+  let isPermitted = yield hasPermission(this.state._user, 'UPDATE');
+  if(!isPermitted) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_UPDATE_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }
+
+  let query = {
+    _id: this.params.id
+  };
+  let body = this.request.body;
+
+  this.checkBody('crop')
+      .notEmpty('Crop Name is Empty');
+  this.checkBody('latitude')
+      .notEmpty('Latitude is Empty');
+  this.checkBody('longitude')
+      .notEmpty('Longitude is Empty');
+
+  if(this.errors) {
+    return this.throw(new CustomError({
+      type: 'CLIENT_UPDATE_ERROR',
+      message: JSON.stringify(this.errors)
+    }));
+  }
+
+  try {
+    let client = yield ClientDal.get(query);
+    if(!client) throw new Error('Client Does Not Exist!!');
+
+    let s2Res = yield sendToS2(body, client);
+
+    body.s2 = s2Res
+
+    yield LogDal.track({
+      event: 'client_update',
+      client: this.state._user._id ,
+      message: `Update Info for ${client.phone}`,
+      diff: body
+    });
+
+    try {
+      s2Res = JSON.parse(s2Res)
+    } catch(ex) {
+      //
+      s2Res = null;
+    }
+
+    if (!s2Res) {
+      client = yield ClientDal.update({
+        _id: client._id
+      },{
+        geolocation: {
+          longitude: body.longitude,
+          latitude: body.latitude,
+          status: "DECLINED"
+        }
+      })
+    } else {
+      client = yield ClientDal.update({
+        _id: client._id
+      },{
+        geolocation: {
+          longitude: body.longitude,
+          latitude: body.latitude,
+          status: "ACCEPTED",
+          S2_Id: s2Res.field_id
+        }
+      })
+    }
+
+    this.body = client;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'UPDATE_CLIENT_ERROR',
       message: ex.message
     }));
 
@@ -1109,4 +1206,79 @@ function findQuestion(text) {
 
     return found;
   })
+}
+
+function polygonFromPoint(longitude, latitude) {
+  let size = 10;
+  let metersPerDegree = 111319.49;
+  let sizeInDegree = (1/metersPerDegree) * size;
+
+  // Create square of 10m around the longitude, latitude
+  let offset = sizeInDegree / 2;
+  let square = [
+    [(longitude - offset), (latitude + offset)],  // Upper left
+    [(longitude + offset), (latitude + offset)],  // Upper right
+    [(longitude + offset), (latitude - offset)],  // Lower right
+    [(longitude - offset), (latitude - offset)],  // Lower left
+    [(longitude - offset), (latitude + offset)]   // Upper left to close the polygon
+  ];
+
+  let squarePoly = {
+     "type": "FeatureCollection",
+     "crs": {
+      "properties": {
+       "name": "urn:ogc:def:crs:EPSG::4326"
+      },
+      "type": "name"
+     },
+     "features": [
+      {
+       "type": "Feature",
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [square]
+       },
+       "properties": {}
+      }
+     ]
+    }
+
+  return squarePoly
+}
+
+function* sendToS2(body, client){
+  let squarePoly = polygonFromPoint(body.longitude, body.latitude);
+  let s2XML = fs.readFileSync('./config/s2.xml', 'utf8');
+
+  // try S2 First
+  let data = {
+    USER_ID: "demo-wur",
+    GROUP_ID: "Allard", // meki
+    TAG: body.crop, // Onion,
+    FEATURES: squarePoly
+  };
+
+  s2XML = s2XML
+    .replace('{{USER_ID}}', data.USER_ID)
+    .replace('{{GROUP_ID}}', data.GROUP_ID)
+    .replace('{{TAG}}', data.TAG)
+    .replace('{{FEATURES}}', JSON.stringify(data.FEATURES, null, '\t'))
+
+  let opts = {
+      method: 'POST',
+      url: `${config.S2.URL}`,
+      body: s2XML,
+      headers: {
+        "Content-Type": "text/xml"
+      },
+      qs: {
+        service: "WPS",
+        version: "1.0.0",
+        request: "Execute"
+      }
+    }
+
+    let res = yield request(opts);
+
+    return res
 }

@@ -1,0 +1,38 @@
+  <wps:Execute xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ogr="http://ogr.maptools.org/" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:wcs="http://www.opengis.net/wcs/1.1.1" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd" xmlns="http://www.opengis.net/wps/1.0.0" service="WPS" version="1.0.0">
+    
+  <ows:Identifier>S2:FieldDeclare </ows:Identifier>   
+  <wps:DataInputs>     
+    <wps:Input>       
+    <ows:Identifier>user_id</ows:Identifier>       
+      <wps:Data>        
+        <wps:LiteralData>{{USER_ID}}</wps:LiteralData>       
+      </wps:Data>     
+    </wps:Input>  
+    
+    <wps:Input>       
+    <ows:Identifier>group_id</ows:Identifier>       
+      <wps:Data>         <wps:LiteralData>{{GROUP_ID}}</wps:LiteralData>       </wps:Data>     
+    </wps:Input>  
+    
+    <wps:Input>       
+    <ows:Identifier>tag</ows:Identifier>       
+      <wps:Data>         <wps:LiteralData>{{TAG}}</wps:LiteralData>       </wps:Data>     
+    </wps:Input>  
+    
+    <wps:Input>
+      <ows:Identifier>features</ows:Identifier>
+      <wps:Data>
+        <wps:ComplexData mimeType="application/json"><![CDATA[{{FEATURES}}]]>
+        </wps:ComplexData>
+        
+      </wps:Data>
+     </wps:Input>
+        
+
+    
+  </wps:DataInputs> 
+    
+  <wps:ResponseForm>     <wps:RawDataOutput mimeType="application/json">       <ows:Identifier>result</ows:Identifier>
+     </wps:RawDataOutput>
+     </wps:ResponseForm>
+  </wps:Execute>

@@ -66,6 +66,10 @@ let config = {
     USERNAME: 'DemoUser11',
     URL: 'https://abacusweb.staging.fernsoftware.com:443/api',
     DEVICE_ID: 'Test User Laptop'
+  },
+
+  S2: {
+    URL: "http://35.195.254.222/CommonSense/S2/wps"
   }
 };
 
