@@ -144,7 +144,7 @@ exports.uploadBulkToCBS = function* uploadBulkToCBS(next) {
       }
 
       if (client.national_id_card) {
-        cardId = yield cbs.uploadId(client.national_id_card);
+        cardId = yield cbs.uploadID(client.national_id_card);
       }
 
         let cbsClient = yield cbs.createClient({
@@ -240,7 +240,7 @@ exports.uploadToCBS = function* uploadToCBS(next) {
       }
 
       if (client.national_id_card) {
-        cardId = yield cbs.uploadId(client.national_id_card);
+        cardId = yield cbs.uploadID(client.national_id_card);
         cardId = cardId.pictureId
       }
       
