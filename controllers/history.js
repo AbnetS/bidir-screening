@@ -103,6 +103,50 @@ exports.search = function* searchHistory(next) {
 };
 
 /**
+ * Create a single history.
+ *
+ * @desc Create client history
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.create = function* createHistory(next) {
+  debug(`create history`);
+
+  let body = this.request.body;
+
+  this.checkBody('client')
+      .notEmpty('Client Reference is Empty');
+  this.checkBody('branch')
+      .notEmpty('Branch Reference is Empty');
+
+  if(this.errors) {
+    return this.throw(new CustomError({
+      type: 'CREATE_HISTORY_ERROR',
+      message: JSON.stringify(this.errors)
+    }));
+  }
+
+  try {
+    let history = yield HistoryDal.create(body);
+
+    yield LogDal.track({
+      event: 'create_history',
+      history: this.state._user._id ,
+      message: `Create history - ${history._id}`
+    });
+
+    this.body = history;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'CREATE_HISTORY_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
+
+/**
  * Get a single history.
  *
  * @desc Fetch a history with the given id from the database.
