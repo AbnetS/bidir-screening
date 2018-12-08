@@ -250,7 +250,7 @@ exports.uploadToCBS = function* uploadToCBS(next) {
         cardId: cardId,
         imgId: imgId,
         branchId: body.branchId,
-        title: body.title
+        title: 0 //body.title
       });
 
       yield ClientDal.update({ _id: client._id },{
