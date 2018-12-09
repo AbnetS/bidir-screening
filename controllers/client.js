@@ -1078,6 +1078,19 @@ exports.search = function* searchClients(next) {
         }
       }
 
+      // rebuild with $or
+      qsKeys = Object.keys(query);
+      let _qs = []
+      qsKeys.forEach((item)=>{
+        let _item = {}
+        _item[item] = query[item]
+        _qs.push(_item)
+      })
+
+      query = {
+        $or: _qs
+      }
+
     }
   
     let clients = yield ClientDal.getCollectionByPagination(query, opts);
