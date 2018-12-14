@@ -36,6 +36,7 @@ var ClientSchema = new Schema({
   geolocation:    {
     latitude:   { type: Number, default: 0 },
     longitude:  { type: Number, default: 0 },
+    longtude:  { type: Number, default: 0 },
     S2_Id:      { type: String, default: "NULL"},
     status:     { type: String, default: "NO ATTEMPT" }
   },
