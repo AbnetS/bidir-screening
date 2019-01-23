@@ -59,6 +59,7 @@ PermissionSchema.statics.attributes = {
   module: 1,
   operation: 1,
   endpoints: 1,
+  entity: 1,
   date_created: 1,
   last_modified: 1,
   _id: 1,
