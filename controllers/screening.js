@@ -230,6 +230,9 @@ exports.fetchOne = function* fetchOneScreening(next) {
 
   try {
     let screening = yield ScreeningDal.get(query);
+    if (!screening) {
+      throw new Error("Screening Does Not Exist!")
+    }
 
     yield LogDal.track({
       event: 'view_screening',
