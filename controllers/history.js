@@ -147,6 +147,90 @@ exports.create = function* createHistory(next) {
 };
 
 /**
+ * update a single history.
+ *
+ * @desc Update a history with the given id from the database.
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.update = function* updateOneHistory(next) {
+  debug(`update history: ${this.params.id}`);
+
+  let query = {
+    _id: this.params.id
+  };
+  let body = this.request.body
+
+  try {
+    let history = yield HistoryDal.get(query);
+    if (!history || !history._id) {
+      throw new Error("Not Found")
+    }
+
+    history = yield HistoryDal.update({ _id: history._id },body)
+    history = history.toJSON();
+    let cycles = yield populateHistory(history);
+
+    history.cycles = cycles;
+
+    yield LogDal.track({
+      event: 'update_history',
+      history: this.state._user._id ,
+      message: `Update history - ${history._id}`
+    });
+
+    this.body = history;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'HISTORY_UPDATE_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
+
+/**
+ * Delete a single history.
+ *
+ * @desc Delete a history with the given id from the database.
+ *
+ * @param {Function} next Middleware dispatcher
+ */
+exports.remove = function* removeHistory(next) {
+  debug(`remove history: ${this.params.id}`);
+
+  let query = {
+    _id: this.params.id
+  };
+
+  try {
+    let history = yield HistoryDal.get(query);
+    if (!history || !history._id) {
+      throw new Error("Not Found")
+    }
+
+    history = yield HistoryDal.delete({ _id: history._id })
+
+    yield LogDal.track({
+      event: 'remove_history',
+      history: this.state._user._id ,
+      message: `Remove history - ${history._id}`
+    });
+
+    this.body = history;
+
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'HISTORY_REMOVE_ERROR',
+      message: ex.message
+    }));
+  }
+
+};
+
+
+/**
  * Get a single history.
  *
  * @desc Fetch a history with the given id from the database.

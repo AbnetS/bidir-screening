@@ -195,6 +195,10 @@ router.get('/paginate', acl(['*']), historyController.fetchAllByPagination);
  */
 router.get('/:id', acl(['*']), historyController.fetchOne);
 
+router.put('/:id', acl(['*']), historyController.update);
+
+router.delete('/:id', acl(['*']), historyController.remove);
+
 
 // Expose History Router
 module.exports = router;
