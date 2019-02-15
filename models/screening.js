@@ -12,12 +12,13 @@ const FORM     = require ('../lib/enums').FORM
 
 var Schema = mongoose.Schema;
 
-var ScreeningSchema = new Schema({       
+var ScreeningSchema = new Schema({
     type:           { type: String, enum: FORM.TYPES },
     title:          { type: String, default: '' },
     subtitle:       { type: String, default: '' },
     purpose:        { type: String, default: '' },
     created_by:     { type: Schema.Types.ObjectId, ref: 'Account' },
+    for_group:           { type: Boolean, default: false },
     layout:         { type: String, default: FORM.LAYOUTS[0], enums: FORM.LAYOUTS },
     has_sections:   { type: Boolean, default: false },
     sections:       [{ type: Schema.Types.ObjectId, ref: 'Section' }],
@@ -74,6 +75,7 @@ ScreeningSchema.statics.attributes = {
   questions: 1,
   created_by: 1,
   client: 1,
+  for_group: 1,
   status: 1,
   branch: 1,
   comment: 1,
