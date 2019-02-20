@@ -16,6 +16,7 @@ var ClientACATSchema = new Schema({
     branch:         { type: Schema.Types.ObjectId, ref: 'Branch' },
     created_by:     { type: Schema.Types.ObjectId, ref: 'User' },
     loan_product:   { type: Schema.Types.ObjectId, ref: 'LoanProduct', default: null },
+    for_group:           { type: Boolean, default: false },
     ACATs:          [{ type: Schema.Types.ObjectId, ref: 'ACAT'}],
     status:         { type: String, default: 'new'},
     filling_status: { type: String, default: 'new' },
@@ -100,6 +101,7 @@ ClientACATSchema.statics.attributes = {
   achieved: 1,
   date_created: 1,
   status: 1,
+  for_group: 1,
   last_modified: 1,
   _id: 1
 };
