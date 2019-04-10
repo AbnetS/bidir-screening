@@ -28,6 +28,7 @@ const Question           = require('../models/question');
 const Form               = require('../models/form');
 const Section            = require('../models/section');
 const History            = require('../models/history');
+const Client             = require ('../models/client');
 
 const TokenDal           = require('../dal/token');
 const ClientDal          = require('../dal/client');
@@ -482,17 +483,19 @@ exports.create = function* createClient(next) {
     let screening = yield ScreeningDal.create(screeningBody);
 
     // start history tracking
-    yield HistoryDal.create({
-      client: client._id,
-      cycles: [{
-        started_by: this.state._user._id,
-        last_edit_by: this.state._user._id,
-        screening: screening._id,
+    if (!body.for_group){
+      yield HistoryDal.create({
+        client: client._id,
+        cycles: [{
+          started_by: this.state._user._id,
+          last_edit_by: this.state._user._id,
+          screening: screening._id,
+          cycle_number: 1
+        }],
+        branch: client.branch._id,
         cycle_number: 1
-      }],
-      branch: client.branch._id,
-      cycle_number: 1
-    })
+      })
+  }
 
     yield ClientDal.update({ _id: client._id },{
       loan_cycle_number: 1
@@ -746,7 +749,12 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   // retrieve pagination query params
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
+  let groupFilter = this.query.for_group || null;
   let query = {};
+  if (groupFilter) {
+    query = {for_group: groupFilter};
+  }
+  
 
   let sortType = this.query.sort_by;
   let sort = {};
@@ -767,7 +775,8 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
 
     // Super Admin
     if (!account || (account.multi_branches && canViewAll)) {
-        query = {};
+      if (groupFilter){
+        query = {for_group: groupFilter};}
 
     // Can VIEW ALL
     } else if (canViewAll) {
@@ -781,18 +790,24 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
 
     // Can VIEW
     } else if(canView) {
-        query = {
-          created_by: user._id
-        };
+        query.created_by = user._id;
+        // query = {
+        //   for_group: groupFilter,
+        //   created_by: user._id
+        // };
 
     // DEFAULT
     } else {
-      query = {
-          created_by: user._id
-        };
+      query.created_by = user._id;
+      // query = {
+      //     for_group: groupFilter,
+      //     created_by: user._id
+      //   };
     }
 
-    let clients = yield ClientDal.getCollectionByPagination(query, opts);
+  
+
+    let clients = yield ClientDal.getCollectionByPagination(query, opts);    
 
     this.body = clients;
 

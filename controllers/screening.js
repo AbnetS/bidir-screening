@@ -74,12 +74,16 @@ exports.create = function* createScreening(next) {
 
     let screening = yield validateCycle(body);
 
-    let history = yield History.findOne({client: client._id}).exec()
-    if (!history) {
-      throw new Error('Client Has No Loan History');
+    if (!body.for_group){
+      let history = yield History.findOne({client: client._id}).exec()
+      if (!history) {
+        throw new Error('Client Has No Loan History');
+    
 
-    } else {
-      history = history.toJSON();
+      } else {
+        history = history.toJSON();
+      }
+    
 
       let cycleOk = true;
       let whichCycle;
@@ -172,27 +176,28 @@ exports.create = function* createScreening(next) {
       loan_cycle_number: (client.loan_cycle_number + 1)
     });
 
-    
-    if (history) {
-      let cycleNumber = history.cycle_number + 1;
+    if (!body.for_group){
+      if (history) {
+        let cycleNumber = history.cycle_number + 1;
 
-      yield History.findOneAndUpdate({
-        _id: history._id
-      },{
-        $set: {
-          cycle_number: cycleNumber,
-          last_modified:  moment().toISOString()
-        },
-        $push: {
-          cycles: {
+        yield History.findOneAndUpdate({
+          _id: history._id
+        },{
+          $set: {
             cycle_number: cycleNumber,
-            started_by: this.state._user._id,
-            last_edit_by: this.state._user._id,
-            screening: newscreening._id
+            last_modified:  moment().toISOString()
+          },
+          $push: {
+            cycles: {
+              cycle_number: cycleNumber,
+              started_by: this.state._user._id,
+              last_edit_by: this.state._user._id,
+              screening: newscreening._id
+            }
           }
-        }
-      }).exec()
-    }
+        }).exec()
+      }
+  }
 
     this.body = newscreening;
 
