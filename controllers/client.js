@@ -412,7 +412,7 @@ exports.create = function* createClient(next) {
     body.created_by = this.state._user._id;
 
 
-    // Create Client Type
+    // Create Client 
     client = yield ClientDal.create(body);
 
     // Create New Screening
@@ -479,7 +479,7 @@ exports.create = function* createClient(next) {
     screeningBody.created_by = this.state._user._id;
     screeningBody.branch = client.branch._id;
 
-    // Create Screening Type
+    // Create Screening 
     let screening = yield ScreeningDal.create(screeningBody);
 
     // start history tracking
@@ -752,7 +752,7 @@ exports.fetchAllByPagination = function* fetchAllClients(next) {
   let groupFilter = this.query.for_group || null;
   let query = {};
   if (groupFilter) {
-    query = {for_group: groupFilter};
+    query = {for_group:  groupFilter};
   }
   
 
@@ -1329,4 +1329,40 @@ function* sendToS2(body, client){
     let res = yield request(opts);
 
     return res
+}
+
+
+//CLEANUP: Will be removed, done for the purpose of setting a new attribute value in older records.
+exports.setForGroup = function* setForGroup(next){
+  
+    let client = "";
+    let branch = "";
+    
+    let clients = yield ClientDal.getCollection({});
+    let updatedClients = [];
+    for (let i = 0; i < clients.length; i++)
+    {
+      let id = "";
+      if (!clients[i].for_group)
+      {
+        id = clients[i]._id;
+        let c = yield ClientDal.update({_id:id}, {$set:{			
+          for_group:false}});
+        updatedClients.push(c);
+        
+        
+      }
+      
+      
+
+
+    }
+
+    this.body = {
+      count: updatedClients.length,
+      Clients:updatedClients};
+
+
+
+
 }

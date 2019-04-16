@@ -42,6 +42,9 @@ const HistoryDal          = require('../dal/history');
 let hasPermission = checkPermissions.isPermitted('SCREENING');
 let PREQS = [];
 
+
+
+
 /**
  * Create a screening.
  *
@@ -72,7 +75,11 @@ exports.create = function* createScreening(next) {
       throw new Error('Client With Those Details Does Not Exist!!');
     }
 
-    let screening = yield validateCycle(body);
+    let screening = null;
+    if (!body.for_group)
+      screening = yield validateCycle(body);
+    else
+      screening = yield ScreeningDal.get ({_id: body.screening});
 
     if (!body.for_group){
       let history = yield History.findOne({client: client._id}).exec()
@@ -131,7 +138,6 @@ exports.create = function* createScreening(next) {
         let _questions = [];
         delete section._id;
         if(section.questions.length) {
-
           for(let question of section.questions) {
             PREQS = [];
             question = yield createQuestion(question);
@@ -166,6 +172,9 @@ exports.create = function* createScreening(next) {
       screeningBody.signatures = screening.signatures.slice();
       screeningBody.created_by = this.state._user._id;
       screeningBody.branch = client.branch._id;
+      if (body.for_group){
+        screeningBody.for_group = true;
+      }
 
 
     // Create Screening Type

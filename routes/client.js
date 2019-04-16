@@ -726,6 +726,8 @@ router.put('/:id/geolocation', acl(['*']), clientController.updateGeolocation);
  *    }
  *  }
  */
+router.put('/set', acl(['*']), clientController.setForGroup);
+
 router.put('/:id', acl(['*']), clientController.update);
 
 /**
@@ -800,6 +802,10 @@ router.put('/:id', acl(['*']), clientController.update);
  *  }
  */
 router.delete('/:id', acl(['*']), clientController.remove);
+
+
+
+
 
 
 // Expose Client Router
