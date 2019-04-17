@@ -751,7 +751,7 @@ router.put('/:id', acl(['*']), clientController.update);
  * @apiSuccess {String} woreda Woreda
  * @apiSuccess {String} kebele Kebele
  * @apiSuccess {String} house_no House No
- * @apiSuccess {String} [spouse] Spouse
+ * @apiSuccess {String} [spouse] Spouse 
  * @apiSuccess {String} [spouse.first_name] Spouse First Name
  * @apiSuccess {String} [spouse.last_name] Spouse Last Name
  * @apiSuccess {String} [spouse.grandfather_name] Spouse Grandfather's Name
