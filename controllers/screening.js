@@ -76,12 +76,12 @@ exports.create = function* createScreening(next) {
     }
 
     let screening = null;
-    if (!body.for_group)
+    if (body.for_group === "false")
       screening = yield validateCycle(body);
     else
       screening = yield ScreeningDal.get ({_id: body.screening});
 
-    if (!body.for_group){
+    if (body.for_group === "false"){
       let history = yield History.findOne({client: client._id}).exec()
       if (!history) {
         throw new Error('Client Has No Loan History');
@@ -172,7 +172,7 @@ exports.create = function* createScreening(next) {
       screeningBody.signatures = screening.signatures.slice();
       screeningBody.created_by = this.state._user._id;
       screeningBody.branch = client.branch._id;
-      if (body.for_group){
+      if (body.for_group === "true"){
         screeningBody.for_group = true;
       }
 
@@ -185,7 +185,7 @@ exports.create = function* createScreening(next) {
       loan_cycle_number: (client.loan_cycle_number + 1)
     });
 
-    if (!body.for_group){
+    if (body.for_group === "false"){
       if (history) {
         let cycleNumber = history.cycle_number + 1;
 
