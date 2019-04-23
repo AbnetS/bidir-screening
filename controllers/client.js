@@ -483,7 +483,7 @@ exports.create = function* createClient(next) {
     let screening = yield ScreeningDal.create(screeningBody);
 
     // start history tracking
-    if (body.for_group === "false"){
+    if (body.for_group === "false" || body.for_group == false){
       yield HistoryDal.create({
         client: client._id,
         cycles: [{
