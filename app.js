@@ -145,6 +145,7 @@ server.on('listening', () => {
   let bind = (typeof PORT === 'string') ? `Pipe ${PORT}` : `Port ${PORT}`;
 
   debug(`Listening on ${bind}`);
+  console.log(`Listening on ${bind}`);
 
 });
 
