@@ -140,7 +140,7 @@ exports.create = function* createScreening(next) {
         delete section._id;
         if(section.questions.length) {
           for(let question of section.questions) {
-            PREQS = [];
+            //PREQS = [];
             question = yield createQuestion(question);
             if(question) {
 
