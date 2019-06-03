@@ -10,6 +10,7 @@ var paginator = require('mongoose-paginate');
 var Schema = mongoose.Schema;
 
 var CostListItemSchema = new Schema({
+    number:          { type: Number, default: 0 },
     item:            { type: String, default: '' },
     unit:            { type: String, default: '' },
     remark:          { type: String, default: '' },
@@ -82,6 +83,7 @@ CostListItemSchema.pre('save', function preSaveMiddleware(next) {
  * Filter CostListItem Attributes to expose
  */
 CostListItemSchema.statics.attributes = {
+  number: 1,
   item: 1,
   unit: 1,
   estimated: 1,
