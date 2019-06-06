@@ -78,8 +78,15 @@ exports.create = function* createScreening(next) {
     let screening = null;
     if (body.for_group === "false" || body.for_group == false)
       screening = yield validateCycle(body);
-    else
+    else if (body.screening)
       screening = yield ScreeningDal.get ({_id: body.screening});
+    else
+    {
+      screening = yield Screening.findOne({ client: body.client })
+                                  .sort({ date_created: -1 })
+                                  .exec();
+    }
+      
 
     let history = null;
     if (body.for_group === "false" || body.for_group == false){
