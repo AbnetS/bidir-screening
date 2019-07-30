@@ -1017,9 +1017,10 @@ exports.search = function* searchClients(next) {
 
     
 
-    if (this.query.searchTerm) {
+    if (this.query.search) {
       query.$or = [];
 
+      let searchTerm = this.query.search;
       let terms = searchTerm.split(/\s+/);
       let groupTerms = { $in: [] };
 
