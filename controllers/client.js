@@ -1041,6 +1041,8 @@ exports.search = function* searchClients(next) {
         },{
           last_name: groupTerms
         },{
+          grandfather_name: groupTerms
+        },{
           national_id_no: groupTerms
         },{
           woreda: groupTerms
