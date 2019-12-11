@@ -1016,7 +1016,7 @@ exports.search = function* searchClients(next) {
     }
 
     
-
+    query.for_group = false;
     if (this.query.search) {
       query.$or = [];
 
