@@ -148,7 +148,7 @@ router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
  * and `per_page=<RESULTS_PER_PAGE>`. __QUERY SOURCE MUST BE SPECIFIED LIKE ?source=<web|app>__
  *
  * @apiExample Usage Example
- * api.test.bidir.gebeya.co/search?search=new
+ * api.test.bidir.gebeya.co/screenings/search?search=new
  * 
  * @apiSuccess {String} _id screening id
  * @apiSuccess {String} type Form Type SCREENING
