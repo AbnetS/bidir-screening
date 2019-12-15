@@ -25,8 +25,8 @@ router.post('/create', acl(['*']), historyController.create);
  *                 Searches loan history of a client. Providing client reference is mandatory.
  * 
  * @apiExample Usage Example
- * api.test.bidir.gebeya.co/histories/search?client=5df0a12771d0804290a71136
- * api.test.bidir.gebeya.co/histories/search?client=5bea8a1c2abd190001c98be1&loanCycle=1
+ * api.test.bidir.gebeya.co/screenings/histories/search?client=5df0a12771d0804290a71136
+ * api.test.bidir.gebeya.co/screenings/histories/search?client=5bea8a1c2abd190001c98be1&loanCycle=1
  * api.dev.bidir.gebeya.co/screenings/histories/search?application=screening&client=5cbf1ffb06139164e0e657fe&loanCycle=1
  *
  * @apiSuccess {String} _id history id
