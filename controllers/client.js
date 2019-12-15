@@ -709,11 +709,93 @@ exports.update = function* updateClient(next) {
   let query = {
     _id: this.params.id
   };
-  let body = this.request.body;
 
-  try {
-    let client = yield ClientDal.update(query, body);
-    if(!client) throw new Error('Client Does Not Exist!!');
+  try{
+
+    let client = yield ClientDal.get(query);
+    if (!client){
+      throw new Error ("Client does not exist");
+    }
+  
+  let body = this.request.body;
+  let bodyKeys = Object.keys(body);
+  let isMultipart = (bodyKeys.indexOf('fields') !== -1) && (bodyKeys.indexOf('files') !== -1);
+
+  // If content is multipart reduce fields and files path
+  if(isMultipart) {
+    let _clone = {};
+
+    for(let key of bodyKeys) {
+      let props = body[key];
+      let propsKeys = Object.keys(props);
+
+      for(let prop of propsKeys) {
+        _clone[prop] = props[prop];
+      }
+    }
+
+    body = _clone;
+
+  }
+
+  if(body.national_id_card) {
+    let filename  = client.first_name.trim().toUpperCase().split(/\s+/).join('_');
+    let id        = crypto.randomBytes(6).toString('hex');
+    let extname   = path.extname(body.national_id_card.name);
+    let assetName = `${filename}_${id}${extname}`;
+
+    yield fs.move(body.national_id_card.path, `./assets/${assetName}`)
+    yield fs.remove(body.national_id_card.path);
+    
+    body.national_id_card = `${config.ASSETS.DEV}${assetName}`
+
+    /*try {
+      let url       = yield googleBuckets(body.national_id_card.path, assetName);
+
+      body.national_id_card = url;
+    } catch(ex) {
+      body.national_id_card = `http://api.dev.bidir.gebeya.co/screening/assets/${body.national_id_card.path}`
+    }*/
+  }
+
+  if(body.picture) {
+    let filename  = client.first_name.trim().toUpperCase().split(/\s+/).join('_');
+    let id        = crypto.randomBytes(6).toString('hex');
+    let extname   = path.extname(body.picture.name);
+    let assetName = `${filename}_${id}${extname}`;
+
+    yield fs.move(body.picture.path, `./assets/${assetName}`)
+    yield fs.remove(body.picture.path);
+
+    body.picture = `${config.ASSETS.DEV}${assetName}`
+
+    /*try {
+      let url       = yield googleBuckets(body.picture.path, assetName);
+
+      body.picture = url;
+    } catch(ex) {
+      body.picture = `http://api.dev.bidir.gebeya.co/screening/assets/${body.picture.path}`
+    }*/
+  }
+
+  if(isMultipart) {
+    try {
+      if(body.spouse) {
+        body.spouse = JSON.parse(body.spouse);
+      }
+      if(body.geolocation) {
+        body.geolocation = JSON.parse(body.geolocation);
+      }
+    } catch(ex) {
+
+    }
+  }
+
+
+
+  
+    client = yield ClientDal.update(query, body);
+    //if(!client) throw new Error('Client Does Not Exist!!');
 
     yield LogDal.track({
       event: 'client_update',
