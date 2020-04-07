@@ -614,6 +614,95 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
 };
 
 
+exports.fetchLatest = function* fetchLatestScreenings(next) {
+  debug('get a collection of screenings by pagination');
+
+  let isPermitted = yield hasPermission(this.state._user, 'VIEW');
+
+  // retrieve pagination query params
+  let page   = this.query.page || 1;
+  let limit  = this.query.per_page || 10;
+
+  /*if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
+    return this.throw(new CustomError({
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
+      message: 'Query Source should be either web or app'
+    }));
+  }
+
+  if(this.query.source == 'web' && !isPermitted) {
+    return this.throw(new CustomError({
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
+      message: "You Don't have enough permissions to complete this action"
+    }));
+  }*/
+
+  let sortType = this.query.sort_by;
+  let sort = {};
+  sortType ? (sort[sortType] = -1) : (sort.date_created = -1 );
+
+  let opts = {
+    page: +page,
+    limit: +limit,
+    sort: sort
+  };
+
+  let canViewAll =  yield hasPermission(this.state._user, 'VIEW_ALL');
+  let canView =  yield hasPermission(this.state._user, 'VIEW');
+
+
+  try {
+    
+    let user = this.state._user;
+    let account = yield Account.findOne({ user: user._id }).exec();
+    let query = {};
+
+    // Super Admin
+    if (!account || (account.multi_branches && canViewAll)) {
+        query = {};
+
+    // Can VIEW ALL
+    } else if (canViewAll) {
+      if(account.access_branches.length) {
+          query.branch = { $in: account.access_branches };
+
+      } else if(account.default_branch) {
+          query.branch = account.default_branch;
+
+      }
+
+    // Can VIEW
+    } else if(canView) {
+        query = {
+          created_by: user._id
+        };
+
+    // DEFAULT
+    } else {
+      query = {
+          created_by: user._id
+        };
+    }
+
+    if(this.query.show_active) {
+      query.status = {
+        $in: ['screening_inprogress','submitted', 'new', 'declined_under_review']
+      };
+    }
+
+    let screenings = yield ScreeningDal.getLatestCycleScreening(query, opts);
+
+    this.body = screenings;
+    
+  } catch(ex) {
+    return this.throw(new CustomError({
+      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
+      message: ex.message
+    }));
+  }
+};
+
+
 /**
  * Remove a single screening.
  *

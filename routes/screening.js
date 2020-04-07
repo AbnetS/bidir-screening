@@ -137,6 +137,8 @@ router.post('/create', acl(['*']), screeningController.create);
  */
 router.get('/paginate', acl(['*']), screeningController.fetchAllByPagination);
 
+router.get('/latest', acl(['*']), screeningController.fetchLatest);
+
 /**
  * @api {get} /screenings/search?page=<RESULTS_PAGE>&per_page=<RESULTS_PER_PAGE> Search screenings
  * @apiVersion 1.0.0

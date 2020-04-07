@@ -226,6 +226,88 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
 };
 
 /**
+ * get a collection of screenings belonging to latest cycle using pagination only for loans in progress.
+ * 
+ * Screenings for granted and paid loans are not returned
+ *
+ * @desc get a collection of latest screenings from db
+ *
+ * @param {Object} query Query Object
+ *
+ * @return {Promise}
+ */
+
+exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
+
+  let page = qs.page;
+  let limit = qs.limit;
+  let skip = (page -1) * limit;
+
+  let allDocs = yield Screening.aggregate([      
+    {$match: query},
+    {$sort: { date_created: -1 }},
+    {$group: {
+      _id: "$client",
+      "client":{$push: "$client"}            
+    }},
+    {$lookup: {
+      from: "clients",
+      localField: "client",
+      foreignField: "_id",
+      as: "populatedClient"
+    }},
+    {$match: { "populatedClient.status": {$nin: ["loan_granted", "Loan-Granted", "loan_paid"]}}}
+  
+  ]).cursor({}).exec().toArray();
+
+  //let total_count = allDocs.filter (item => item.populatedClient[0].status.includes ("ACAT")).length;
+  let total_count = allDocs.length;
+
+
+
+  let screenings = yield Screening.aggregate([
+    {$match: query},  
+    {$lookup: {
+      from: "clients",
+      localField: "client",
+      foreignField: "_id",
+      as: "populatedClient"
+    }},
+    {$match: { "populatedClient.status": {$nin: ["loan_granted", "Loan-Granted", "loan_paid"]}}},   
+    {$sort: { date_created: 1 }},
+    {$group: {
+      _id: "$client",
+      "last_doc": { "$last": "$$ROOT" }           
+    }},
+    {$skip: skip},
+    {$limit: limit}
+  ]).cursor({}).exec().toArray();
+
+
+  let populatedScreening = {};
+
+      
+  let populatedData = [];
+  for (let screening of screenings){
+    populatedScreening = yield Screening.populate(screening.last_doc,population);    
+    delete populatedScreening.populatedClient;
+    populatedData.push(populatedScreening);
+  
+  };
+
+  let data = {
+    total_pages: Math.ceil(total_count / limit) || 1,
+    total_docs_count: total_count,
+    current_page: page,
+    docs: populatedData
+  }; 
+
+
+  return data;
+
+}
+
+/**
  * get a screening.
  *
  * @desc get a screening with the given id from db
