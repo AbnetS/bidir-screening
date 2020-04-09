@@ -47,6 +47,7 @@
     "koa-unless": "0.0.1",
     "koa-validate": "~1.0.7",
     "lodash": "~4.16.1",
+    "lzwcompress": "^0.5.14",
     "moment": "~2.15.1",
     "mongoose": "~4.6.1",
     "mongoose-paginate": "~5.0.0",
@@ -58,6 +59,7 @@
     "request": "^2.75.0",
     "request-promise": "^4.2.2",
     "streaming-json-stringify": "~3.1.0",
+    "util": "^0.12.2",
     "uuid": "~2.0.3",
     "validator": "~5.7.0"
   },

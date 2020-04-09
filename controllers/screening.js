@@ -15,6 +15,7 @@ const del        = require('del');
 const validator  = require('validator');
 const emquery    = require('emquery');
 
+
 const config             = require('../config');
 const CustomError        = require('../lib/custom-error');
 const checkPermissions   = require('../lib/permissions');
@@ -38,6 +39,10 @@ const TaskDal            = require('../dal/task');
 const AccountDal         = require('../dal/account');
 const SectionDal         = require('../dal/section');
 const HistoryDal          = require('../dal/history');
+
+const COMPRESSOR         = require('../lib/compress');
+
+
 
 let hasPermission = checkPermissions.isPermitted('SCREENING');
 let PREQS = [];
@@ -692,7 +697,13 @@ exports.fetchLatest = function* fetchLatestScreenings(next) {
 
     let screenings = yield ScreeningDal.getLatestCycleScreening(query, opts);
 
-    this.body = screenings;
+    let Compressor = new COMPRESSOR();
+    let compressedResult = yield Compressor.compress(screenings);
+
+    
+    this.body = compressedResult;
+
+    //this.body = screenings;
     
   } catch(ex) {
     return this.throw(new CustomError({

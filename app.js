@@ -18,6 +18,7 @@ const etag        = require('koa-etag');
 const conditional = require('koa-conditional-get');
 const bodyParser  = require('koa-body');
 
+
 const config       = require('./config');
 const utils        = require('./lib/utils');
 const authorize    = require('./lib/authorize');
@@ -60,6 +61,7 @@ if(app.env === 'production') {
  * Setup Middleware.
  */
 
+
  // Enable CORS
 app.use(cors({
   headers: 'Origin,X-Requested-With,Content-Type,Accept,Authorization'
@@ -85,6 +87,7 @@ app.use(authorize().unless({ path: router.OPEN_ENDPOINTS }));
 // Serve Static files
 app.use(serve(path.join(__dirname, './'), { index: false }));
 
+
 // Enable Body parser
 app.use(bodyParser({
   multipart: true,
@@ -101,6 +104,11 @@ app.use(bodyParser({
     }
   }
 }));
+
+
+
+
+
 
 //--Routes--//
 

@@ -8,12 +8,16 @@ const debug   = require('debug')('api:dal-screening');
 const moment  = require('moment');
 const _       = require('lodash');
 const co      = require('co');
+const lzwCompress = require('lzwcompress');
+const zlib = require('zlib');
+
 
 const Screening     = require('../models/screening');
 const Question      = require('../models/question');
 const Client        = require('../models/client');
 const Section       = require('../models/section');
 const mongoUpdate   = require('../lib/mongo-update');
+
 
 var returnFields = Screening.attributes;
 var population = [{
@@ -278,7 +282,7 @@ exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
     {$group: {
       _id: "$client",
       "last_doc": { "$last": "$$ROOT" }           
-    }},
+    }},    
     {$skip: skip},
     {$limit: limit}
   ]).cursor({}).exec().toArray();
@@ -290,10 +294,12 @@ exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
   let populatedData = [];
   for (let screening of screenings){
     populatedScreening = yield Screening.populate(screening.last_doc,population);    
-    delete populatedScreening.populatedClient;
+    delete populatedScreening.populatedClient;    
     populatedData.push(populatedScreening);
   
   };
+
+  //let compressedData = JSONC.compress(populatedData);
 
   let data = {
     total_pages: Math.ceil(total_count / limit) || 1,
@@ -301,6 +307,17 @@ exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
     current_page: page,
     docs: populatedData
   }; 
+
+  // const buf = new Buffer(JSON.stringify(data), 'utf-8');
+
+  // zlib.gzip(buf, function(err,result){
+  //   if (err){
+
+  //   } else
+  //     return result;
+  // });
+
+
 
 
   return data;
