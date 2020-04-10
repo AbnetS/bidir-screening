@@ -688,20 +688,18 @@ exports.fetchLatest = function* fetchLatestScreenings(next) {
     }
 
     let screenings = yield ScreeningDal.getLatestCycleScreening(query, opts);
-    //let compressedResult;
-
-    //screenings.pipe(gzip).pipe(compressedResult)
+    
 
     let Compressor = new COMPRESSOR();
     let compressedResult = yield Compressor.compress(screenings);
 
     
-    // this.body = compressedResult;
-    // this.set("Content-Type", "application/json; charset=utf-8");
-    // this.set("Content-Encoding", "gzip");
+    this.body = compressedResult;
+    this.set("Content-Type", "application/json; charset=utf-8");
+    this.set("Content-Encoding", "gzip");
     
 
-    this.body = screenings;
+    //this.body = screenings;
     
   } catch(ex) {
     return this.throw(new CustomError({
