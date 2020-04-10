@@ -42,6 +42,10 @@ const HistoryDal          = require('../dal/history');
 
 const COMPRESSOR         = require('../lib/compress');
 
+const zlib       = require ('zlib');
+
+const gzip = zlib.createGzip();
+
 
 
 let hasPermission = checkPermissions.isPermitted('SCREENING');
@@ -628,19 +632,7 @@ exports.fetchLatest = function* fetchLatestScreenings(next) {
   let page   = this.query.page || 1;
   let limit  = this.query.per_page || 10;
 
-  /*if(!this.query.source || (this.query.source != 'web' && this.query.source != 'app')) {
-    return this.throw(new CustomError({
-      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
-      message: 'Query Source should be either web or app'
-    }));
-  }
-
-  if(this.query.source == 'web' && !isPermitted) {
-    return this.throw(new CustomError({
-      type: 'VIEW_SCREENINGS_COLLECTION_ERROR',
-      message: "You Don't have enough permissions to complete this action"
-    }));
-  }*/
+  
 
   let sortType = this.query.sort_by;
   let sort = {};
@@ -696,12 +688,18 @@ exports.fetchLatest = function* fetchLatestScreenings(next) {
     }
 
     let screenings = yield ScreeningDal.getLatestCycleScreening(query, opts);
+    //let compressedResult;
+
+    //screenings.pipe(gzip).pipe(compressedResult)
 
     let Compressor = new COMPRESSOR();
     let compressedResult = yield Compressor.compress(screenings);
 
     
     this.body = compressedResult;
+    this.set("Content-Type", "application/json")
+    this.set("Content-Encoding", "gzip")
+    
 
     //this.body = screenings;
     
