@@ -623,7 +623,7 @@ exports.fetchAllByPagination = function* fetchAllScreenings(next) {
 };
 
 
-exports.fetchLatest = function* fetchLatestScreenings(next) {
+exports.fetchOngoing = function* fetchOngoingScreenings(next) {
   debug('get a collection of screenings by pagination');
 
   let isPermitted = yield hasPermission(this.state._user, 'VIEW');
@@ -687,11 +687,11 @@ exports.fetchLatest = function* fetchLatestScreenings(next) {
       };
     }
 
-    let screenings = yield ScreeningDal.getLatestCycleScreening(query, opts);
+    let screenings = yield ScreeningDal.getOngoingScreenings(query, opts);
     
 
     let Compressor = new COMPRESSOR();
-    let compressedResult = yield Compressor.compress(screenings);
+    let compressedResult = yield Compressor.compressToGzip(screenings);
 
     
     this.body = compressedResult;

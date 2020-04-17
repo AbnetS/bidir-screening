@@ -241,7 +241,7 @@ exports.getCollectionByPagination = function getCollection(query, qs) {
  * @return {Promise}
  */
 
-exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
+exports.getOngoingScreenings = function* getCollection(query, qs, fields){
 
   let page = qs.page;
   let limit = qs.limit;
@@ -299,7 +299,7 @@ exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
   
   };
 
-  //let compressedData = JSONC.compress(populatedData);
+
 
   let data = {
     total_pages: Math.ceil(total_count / limit) || 1,
@@ -308,18 +308,7 @@ exports.getLatestCycleScreening = function* getCollection(query, qs, fields){
     docs: populatedData
   }; 
 
-  // const buf = new Buffer(JSON.stringify(data), 'utf-8');
-
-  // zlib.gzip(buf, function(err,result){
-  //   if (err){
-
-  //   } else
-  //     return result;
-  // });
-
-
-
-
+ 
   return data;
 
 }
