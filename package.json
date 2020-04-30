@@ -49,7 +49,7 @@
     "lodash": "~4.16.1",
     "lzwcompress": "^0.5.14",
     "moment": "~2.15.1",
-    "mongoose": "~4.6.1",
+    "mongoose": "~5.7.5",
     "mongoose-paginate": "~5.0.0",
     "ms": "~0.7.1",
     "nodemailer": "~4.0.1",
