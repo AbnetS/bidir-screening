@@ -51,7 +51,7 @@
     "moment": "~2.15.1",
     "mongoose": "~4.6.1",
     "mongoose-paginate": "~5.0.0",
-    "ms": "~0.7.1",
+    "ms": "~2.0.0",
     "nodemailer": "~4.0.1",
     "passport": "^0.4.0",
     "passport-facebook-token": "^3.3.0",
